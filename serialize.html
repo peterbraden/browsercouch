@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+  		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  		<link rel="stylesheet" type="text/css" media="all"
+        href="css/index.css" />
+  		<title>Serialization</title>
+		<script src="js/ext/jquery.js"></script>
+		<script src="js/browser-couch.js"></script>
+		<script type='text/javascript'>
+$(function(){
+	var storage = new FakeStorage();
+	BrowserCouch.get("serialize",
+		function(db){
+			var update = function(){
+				db.view({
+					finished: function(x){
+						$("#out").text("" + JSON.stringify(x.rows));
+					},
+					map : function(doc, emit){
+						console.log(doc);
+						if(doc){
+							emit(doc.id, doc.val);
+						}
+					}
+				})
+			};
+
+			$("#add").click(function(){
+				var key = $("#key").val(),
+					val = $("#val").val();
+				if (key && val){
+					db.put([{id: key, val: val}], function(){update()});
+				}
+				return false;
+			});
+			
+			update();
+		});
+});		
+		</script>
+	</head>
+	<body>
+		<h1>Serialization</h1>
+		<form action ="#">
+			<input id = 'key' />
+			<input id = 'val' />
+			<a href ="#" id='add'>Add</a>
+		</form>
+
+		<div id='out'>
+		</div>
+	</body>
+</html>
