@@ -11,7 +11,7 @@
 		<script type='text/javascript'>
 $(function(){
 	var storage = new FakeStorage();
-	BrowserCouch.get("serialize",
+	BrowserCouch.get("browser-couch",
 		function(db){
 			var update = function(){
 				db.view({
@@ -19,7 +19,6 @@ $(function(){
 						$("#out").text("" + JSON.stringify(x.rows));
 					},
 					map : function(doc, emit){
-						console.log(doc);
 						if(doc){
 							emit(doc.id, doc.val);
 						}
@@ -37,7 +36,9 @@ $(function(){
 			});
 			
 			update();
-		});
+		},
+		storage,
+		{sync:{servers:["http://127.0.0.1:5984/"]}});
 });		
 		</script>
 	</head>

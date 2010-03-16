@@ -403,17 +403,64 @@ LocalStorage.isAvailable = (this.location &&
                             this.location.protocol != "file:" &&
                             (this.globalStorage || this.localStorage));
 
+// == SyncManager ==
+//
+// {{{SyncManager}}} syncs the local storage with a remote couchdb server
+// when possible. This introduces the possibility for conflicts, thus
+// we need a callback should a conflict occurr {{{TODO}}} 
+
+//TODO, require JQUERY	
+var SyncManager = function(database, options){
+  var queue = [], // An queue of updated documents waiting to be
+                  // synced back to the servers
+      
+      interval,   // For now we'll just have a sync interval
+                  // running periodically 	
+      sync = function(){
+        console.log("Sync: ", queue);
+		// GET CHANGES
+		$.getJSON(options.servers[0] + database + "/_all_docs_by_seq", {},
+		  function(data){ 
+			console.log(data);
+		});
+        // SEND CHANGES
+		for(var x = queue.pop(); x; x = queue.pop()){
+        	//TODO Use bulk update api
+            var url = "" + database + "/" + x.id;
+			for (var s in options.servers){	
+			  console.log("" + options.servers[s] + url, JSON.stringify(x));
+              $.post("" + options.servers[s] + url, JSON.stringify(x)); //TODO cb 
+			}
+		}
+      }
+
+
+  interval = setInterval(sync, 2000);
+ 
+  return {
+    stopSync : function(){
+      clearInterval(interval);
+    },
+    sync : sync,
+    enqueue : function(doc){
+      queue.push(doc);
+    }
+  }
+}
+
+
+
 // == BrowserCouch ==
 //
 // {{{BrowserCouch}}} is the main object that clients will use.  It's
 // intended to be somewhat analogous to CouchDB's RESTful API.
 
 var BrowserCouch = {
-  get: function BC_get(name, cb, storage) {
+  get: function BC_get(name, cb, storage, options) {
     if (!storage)
       storage = new LocalStorage();
 
-    new this._DB(name, storage, new this._Dictionary(), cb);
+    new this._DB(name, storage, new this._Dictionary(), cb, options);
   },
 
   _Dictionary: function BC__Dictionary() {
@@ -467,10 +514,20 @@ var BrowserCouch = {
     };
   },
 
-  _DB: function BC__DB(name, storage, dict, cb) {
-    var self = this;
-    var dbName = 'BrowserCouch_DB_' + name;
+  _DB: function BC__DB(name, storage, dict, cb, options) {
+    options = options || {};
+    var self = this,
+        dbName = 'BrowserCouch_DB_' + name,
+        syncManager;
 
+    if (options.sync)
+      syncManager = SyncManager(name, options.sync);
+
+	var addToSyncQueue = function(document){
+	  if (syncManager)
+        syncManager.enqueue(document)
+    }
+	
     function commitToStorage(cb) {
       if (!cb)
         cb = function() {};
@@ -491,11 +548,14 @@ var BrowserCouch = {
 
     this.put = function DB_put(document, cb) {
       if (isArray(document)) {
-        for (var i = 0; i < document.length; i++)
+        for (var i = 0; i < document.length; i++){
           dict.set(document[i].id, document[i]);
-      } else
+          addToSyncQueue(document[i]);
+        }
+      } else{
         dict.set(document.id, document);
-
+        addToSyncQueue(document);
+      }
       commitToStorage(cb);
     };
 
