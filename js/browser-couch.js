@@ -251,7 +251,7 @@ var SingleThreadedMapReducer = {
       } while (i - iAtStart < chunkSize &&
                i < keys.length)
 
-      if (i == keys.length) {
+      if (i >= keys.length) {
         var mapKeys = [];
         for (name in mapDict)
           mapKeys.push(name);
