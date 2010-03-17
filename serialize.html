@@ -10,10 +10,10 @@
 		<script src="js/browser-couch.js"></script>
 		<script type='text/javascript'>
 $(function(){
-	var storage = new FakeStorage();
+	var storage = new FakeStorage(), update = function(){};
 	BrowserCouch.get("browser-couch",
 		function(db){
-			var update = function(){
+			update = function(){
 				db.view({
 					finished: function(x){
 						$("#out").text("" + JSON.stringify(x.rows));
@@ -38,7 +38,12 @@ $(function(){
 			update();
 		},
 		storage,
-		{sync:{servers:["http://127.0.0.1:5984/"]}});
+		{sync:{servers:["http://127.0.0.1:8000/"],
+			updateCallback : function(){
+				update();
+			}
+		}
+	});
 });		
 		</script>
 	</head>

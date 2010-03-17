@@ -1,0 +1,8 @@
+Browser-Couch. 
+
+CouchDB in the browser - persistant, syncing client side storage.
+
+Unsorted notes:
+	- There's a quick and dirty node.js proxy server in srv,
+	 to get around the crossdomain policies for testing.
+	 Obviously it's not designed for production use

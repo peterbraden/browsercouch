@@ -410,18 +410,28 @@ LocalStorage.isAvailable = (this.location &&
 // we need a callback should a conflict occurr {{{TODO}}} 
 
 //TODO, require JQUERY	
-var SyncManager = function(database, options){
+var SyncManager = function(database, db, options){
   var queue = [], // An queue of updated documents waiting to be
                   // synced back to the servers
       
       interval,   // For now we'll just have a sync interval
                   // running periodically 	
+      
       sync = function(){
-        console.log("Sync: ", queue);
-		// GET CHANGES
-		$.getJSON(options.servers[0] + database + "/_all_docs_by_seq", {},
-		  function(data){ 
-			console.log(data);
+		
+        // === Get Changes ===
+        var url = options.servers[0] + database + "/_all_docs_by_seq";
+        $.getJSON(url, {}, function(data){
+          console.log(data); 
+          // If data, and if data rows, sync
+          // This means comparing _rev's.
+          if (data && data.rows){
+            // TODO, screw it, for now we'll assume the servers right
+            db.put(data.rows, function(){}, {noSync:true});
+
+            if (options.updateCallback)
+              options.updateCallback();
+		  }
 		});
         // SEND CHANGES
 		for(var x = queue.pop(); x; x = queue.pop()){
@@ -429,13 +439,15 @@ var SyncManager = function(database, options){
             var url = "" + database + "/" + x.id;
 			for (var s in options.servers){	
 			  console.log("" + options.servers[s] + url, JSON.stringify(x));
-              $.post("" + options.servers[s] + url, JSON.stringify(x)); //TODO cb 
+              $.post("" + options.servers[s] + url, x, function(data){
+			  	console.log(data);
+ 			  }); 
 			}
 		}
       }
 
 
-  interval = setInterval(sync, 2000);
+  interval = setInterval(sync, 5000);
  
   return {
     stopSync : function(){
@@ -521,7 +533,7 @@ var BrowserCouch = {
         syncManager;
 
     if (options.sync)
-      syncManager = SyncManager(name, options.sync);
+      syncManager = SyncManager(name, this, options.sync);
 
 	var addToSyncQueue = function(document){
 	  if (syncManager)
@@ -546,15 +558,18 @@ var BrowserCouch = {
         cb(null);
     };
 
-    this.put = function DB_put(document, cb) {
+    this.put = function DB_put(document, cb, options) {
+	  options = options || {};
       if (isArray(document)) {
         for (var i = 0; i < document.length; i++){
           dict.set(document[i].id, document[i]);
-          addToSyncQueue(document[i]);
+          if(!options.noSync)
+		    addToSyncQueue(document[i]);
         }
       } else{
         dict.set(document.id, document);
-        addToSyncQueue(document);
+        if(!options.noSync)
+		  addToSyncQueue(document);
       }
       commitToStorage(cb);
     };
