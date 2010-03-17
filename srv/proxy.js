@@ -20,7 +20,7 @@ http.createServer(function (request, response) {
 	//Proxy to couch
 		else {
 			var p = http.createClient(5984, 'localhost');
-			var req = p.request(request.method, request.url, {'host' : 'localhost'});
+			var req = p.request(request.method, request.url, request.headers);
 			var cont = "", stat, header;
 			req.addListener('response', function(resp){
 				stat = resp.statusCode;

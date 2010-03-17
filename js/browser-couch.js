@@ -420,11 +420,12 @@ var SyncManager = function(database, db, options){
       sync = function(){
 		
         // === Get Changes ===
+        // We ping the {{{_all_docs_by_seq}}} endpoint to get the most
+        // recent documents. Ultimately we'll want to page this.
+
         var url = options.servers[0] + database + "/_all_docs_by_seq";
         $.getJSON(url, {}, function(data){
-          console.log(data); 
-          // If data, and if data rows, sync
-          // This means comparing _rev's.
+
           if (data && data.rows){
             // TODO, screw it, for now we'll assume the servers right
             db.put(data.rows, function(){}, {noSync:true});
@@ -433,16 +434,25 @@ var SyncManager = function(database, db, options){
               options.updateCallback();
 		  }
 		});
-        // SEND CHANGES
+
+        // === Send Changes ===
+        // We'll ultimately use the bulk update methods, but for
+        // now, just iterate through the queue with a req for each
+
 		for(var x = queue.pop(); x; x = queue.pop()){
-        	//TODO Use bulk update api
             var url = "" + database + "/" + x.id;
-			for (var s in options.servers){	
+			for (var s in options.servers){
 			  console.log("" + options.servers[s] + url, JSON.stringify(x));
-              $.post("" + options.servers[s] + url, x, function(data){
-			  	console.log(data);
- 			  }); 
-			}
+              $.ajax({
+                url : "" + options.servers[s] + url, 
+                data : JSON.stringify(x),
+                type : 'PUT',
+                contentType : 'application/json',
+                complete: function(data){
+			  	  console.log(data);
+ 			    }
+			  });
+           }
 		}
       }
 
