@@ -2,12 +2,6 @@ Browser-Couch.
 
 CouchDB in the browser - persistant, syncing client side storage.
 
-Unsorted notes:
-	- There's a quick and dirty node.js proxy server in srv,
-	 to get around the crossdomain policies for testing.
-	 Obviously it's not designed for production use
-
-
  == REQUIRES ==
 
 To run the syncing examples out of couchdb you'll need to install
