@@ -8,11 +8,21 @@ Unsorted notes:
 	 Obviously it's not designed for production use
 
 
-TODO:
- - Move the html into couchdb, so it's served from the same domain
-    - obviates the need for the node.js proxy
-    - Look at http://github.com/couchapp/couchapp
+ == REQUIRES ==
 
+To run the syncing examples out of couchdb you'll need to install
+couchapp [http://github.com/couchapp/couchapp]
+
+ == RUNNING == 
+
+From couchapp directory
+> couchapp push http://localhost:5984/browsercouch
+
+
+
+
+
+TODO:
  - Get to the root of this couchdb traceback
 
  -- 
