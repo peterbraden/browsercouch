@@ -373,7 +373,7 @@ var BrowserCouch = function(opts){
   
     function ensureJSON(cb) {
       if (!JSON) {
-        ModuleLoader.require(
+        BrowserCouch.ModuleLoader.require(
           "JSON",
           function() {
             JSON = window.JSON;
@@ -557,7 +557,7 @@ var BrowserCouch = function(opts){
           syncManager;
   
       if (options.sync)
-        syncManager = SyncManager(name, this, options.sync);
+        syncManager = BrowserCouch.SyncManager(name, this, options.sync);
   
       var addToSyncQueue = function(document){
         if (syncManager)
