@@ -16,7 +16,11 @@ $(function(){
 			update = function(){
 				db.view({
 					finished: function(x){
-						$("#out").text("" + JSON.stringify(x.rows));
+						$("#out").html("");
+						var rows = x.rows;
+						for (var y in rows){
+							$("#out").append("<tr><td>" + y + "</td><td>" + JSON.stringify(rows[y]) + "</td></tr>");	
+						}
 					},
 					map : function(doc, emit){
 						if(doc){
@@ -55,7 +59,7 @@ $(function(){
 			<a href ="#" id='add'>Add</a>
 		</form>
 
-		<div id='out'>
-		</div>
+		<table id='out'>
+		</table>
 	</body>
 </html>
