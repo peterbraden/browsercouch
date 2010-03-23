@@ -441,12 +441,14 @@ var SyncManager = function(database, db, options){
 
 		for(var x = queue.pop(); x; x = queue.pop()){
             var url = "" + database + "/" + x.id;
+			x._rev = x._rev || "12345"; 
 			for (var s in options.servers){
 			  console.log("" + options.servers[s] + url, JSON.stringify(x));
               $.ajax({
                 url : "" + options.servers[s] + url, 
                 data : JSON.stringify(x),
                 type : 'PUT',
+                processData : false,
                 contentType : 'application/json',
                 complete: function(data){
 			  	  console.log(data);

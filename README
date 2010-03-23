@@ -6,3 +6,19 @@ Unsorted notes:
 	- There's a quick and dirty node.js proxy server in srv,
 	 to get around the crossdomain policies for testing.
 	 Obviously it's not designed for production use
+
+
+TODO:
+ - Move the html into couchdb, so it's served from the same domain
+    - obviates the need for the node.js proxy
+    - Look at http://github.com/couchapp/couchapp
+
+ - Get to the root of this couchdb traceback
+
+ -- 
+ - Sort out Revisioning
+
+ - Make more intelligent storage class based on B-Tree so we can 
+   more easily sync recent changes
+
+ 
