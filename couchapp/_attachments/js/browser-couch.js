@@ -39,7 +39,8 @@
 //
 // This is the primary implementation file for BrowserCouch.
 var BrowserCouch = function(opts){
-
+  var bc = {};
+  
   
   // === {{{isArray()}}} ===
   //
@@ -59,7 +60,7 @@ var BrowserCouch = function(opts){
   // A really basic module loader that allows dependencies to be
   // "lazy-loaded" when their functionality is needed.
   
-  ModuleLoader = {
+  bc.ModuleLoader = {
     LIBS: {JSON: "js/ext/json2.js",
            UUID: "js/ext/uuid.js"},
   
@@ -129,7 +130,7 @@ var BrowserCouch = function(opts){
   // The script run by spawned Web Workers is
   // [[#js/worker-map-reducer.js|worker-map-reducer.js]].
   
-  WebWorkerMapReducer = function WebWorkerMapReducer(numWorkers, Worker) {
+  bc.WebWorkerMapReducer = function WebWorkerMapReducer(numWorkers, Worker) {
     if (!Worker)
       Worker = window.Worker;
   
@@ -217,14 +218,14 @@ var BrowserCouch = function(opts){
   
     // TODO: Actually implement our own reduce() method here instead
     // of delegating to the single-threaded version.
-    this.reduce = SingleThreadedMapReducer.reduce;
+    this.reduce = bc.SingleThreadedMapReducer.reduce;
   };
   
   // === {{{SingleThreadedMapReducer}}} ===
   //
   // A MapReducer that works on the current thread.
   
-  SingleThreadedMapReducer = {
+  bc.SingleThreadedMapReducer = {
     map: function STMR_map(map, dict, progress,
                            chunkSize, finished) {
       var mapDict = {};
@@ -313,7 +314,7 @@ var BrowserCouch = function(opts){
   // a placeholder that can be used for testing purposes, or when no
   // persistent storage mechanisms are available.
   
-  FakeStorage = function FakeStorage() {
+  bc.FakeStorage = function FakeStorage() {
     var db = {};
   
     function deepCopy(obj) {
@@ -358,7 +359,7 @@ var BrowserCouch = function(opts){
   // This Storage implementation uses the browser's HTML5 support for
   // {{{localStorage}}} or {{{globalStorage}}} for object persistence.
   
-  LocalStorage = function LocalStorage(JSON) {
+  bc.LocalStorage = function LocalStorage(JSON) {
     var storage;
   
     if (window.globalStorage)
@@ -402,7 +403,7 @@ var BrowserCouch = function(opts){
     };
   }
   
-  LocalStorage.isAvailable = (this.location &&
+  bc.LocalStorage.isAvailable = (this.location &&
                               this.location.protocol != "file:" &&
                               (this.globalStorage || this.localStorage));
   
@@ -413,7 +414,7 @@ var BrowserCouch = function(opts){
   // we need a callback should a conflict occurr {{{TODO}}} 
   
   //TODO, require JQUERY  
-  var SyncManager = function(database, db, options){
+  bc.SyncManager = function(database, db, options){
     var queue = [], // An queue of updated documents waiting to be
                     // synced back to the servers
         
@@ -491,15 +492,14 @@ var BrowserCouch = function(opts){
   // {{{BrowserCouch}}} is the main object that clients will use.  It's
   // intended to be somewhat analogous to CouchDB's RESTful API.
   
-  var BrowserCouch = {
-    get: function BC_get(name, cb, storage, options) {
+    bc.get = function BC_get(name, cb, storage, options) {
       if (!storage)
-        storage = new LocalStorage();
+        storage = new bc.LocalStorage();
   
-      new this._DB(name, storage, new this._Dictionary(), cb, options);
+      new bc._DB(name, storage, new this._Dictionary(), cb, options);
     },
   
-    _Dictionary: function BC__Dictionary() {
+    bc._Dictionary = function BC__Dictionary() {
       var dict = {};
       var keys = [];
   
@@ -548,9 +548,9 @@ var BrowserCouch = function(opts){
         dict = obj;
         regenerateKeys();
       };
-    },
+    }
   
-    _DB: function BC__DB(name, storage, dict, cb, options) {
+    bc._DB = function BC__DB(name, storage, dict, cb, options) {
       options = options || {};
       var self = this,
           dbName = 'BrowserCouch_DB_' + name,
@@ -666,7 +666,7 @@ var BrowserCouch = function(opts){
   
         var mapReducer = options.mapReducer;
         if (!mapReducer)
-          mapReducer = SingleThreadedMapReducer;
+          mapReducer = bc.SingleThreadedMapReducer;
   
         mapReducer.map(
           options.map,
@@ -695,9 +695,9 @@ var BrowserCouch = function(opts){
             dict.unpickle(obj);
           cb(self);
         });
-    },
+    }
   
-    _View: function BC__View(rows) {
+    bc._View = function BC__View(rows) {
       this.rows = rows;
   
       function findRow(key, rows) {
@@ -718,7 +718,7 @@ var BrowserCouch = function(opts){
       };
     },
   
-    _MapView: function BC__MapView(mapResult) {
+    bc._MapView = function BC__MapView(mapResult) {
       var rows = [];
       var keyRows = [];
   
@@ -765,8 +765,6 @@ var BrowserCouch = function(opts){
         return findRow(key, keyRows);
       };
     }
-  };
-  return {
   
-  }
+  return bc
 }();  
