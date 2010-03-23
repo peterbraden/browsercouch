@@ -46,8 +46,8 @@ $(function(){
 
 			$("#add").click(function(){
 				val = $("#val").val();
-				if (key && val){
-					db.post(JSON.parse(val), function(){update()});
+				if (val){
+					db.post({val:JSON.parse(val)}, function(){update()});
 				}
 				return false;
 			});

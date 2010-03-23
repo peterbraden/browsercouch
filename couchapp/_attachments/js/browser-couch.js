@@ -595,11 +595,25 @@ var BrowserCouch = {
       }
       commitToStorage(cb);
     };
+    var ensureUUID = function(cb) {
+        ModuleLoader.require(
+          "UUID",
+          function() {
+            UUID = window.UUID;
+            cb();
+          });
+      }
 
     this.post =function(data, cb, options){
+      var _t = this
       if (!data.id)
-        data.id = UUID.createUUID();
-      this.put(data, function(){cb(data.id)}, options)  
+        ensureUUID(function(){
+          data.id = new UUID().createUUID();
+          _t.put(data, function(){cb(data.id)}, options);
+        });
+      else{  
+        _t.put(data, function(){cb(data.id)}, options)
+      }
     }
 
     this.getLength = function DB_getLength() {
