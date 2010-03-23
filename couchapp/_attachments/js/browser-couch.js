@@ -309,6 +309,7 @@ var BrowserCouch = function(opts){
   // //Storage// is a generic interface for a persistent storage
   // implementation capable of storing JSON-able objects.
   
+  
   // === {{{FakeStorage}}} ===
   //
   // This Storage implementation isn't actually persistent; it's just
@@ -359,6 +360,9 @@ var BrowserCouch = function(opts){
   //
   // This Storage implementation uses the browser's HTML5 support for
   // {{{localStorage}}} or {{{globalStorage}}} for object persistence.
+  //
+  // Each database is stored in a key, as a JSON encoded string. In 
+  // future we may want to rethink this as it's horribly inneficient
   
   bc.LocalStorage = function LocalStorage(JSON) {
     var storage;
@@ -412,9 +416,9 @@ var BrowserCouch = function(opts){
   //
   // {{{SyncManager}}} syncs the local storage with a remote couchdb server
   // when possible. This introduces the possibility for conflicts, thus
-  // we need a callback should a conflict occurr {{{TODO}}} 
+  // we need a callback should a conflict occurr 
+  //
   
-  //TODO, require JQUERY  
   bc.SyncManager = function(database, db, options){
     var queue = [], // An queue of updated documents waiting to be
                     // synced back to the servers
@@ -585,9 +589,11 @@ var BrowserCouch = function(opts){
       
       // === {{{PUT}}} ===
       //
-      // This method is vaguely isomorphic to a HTTP PUT to a 
+      // This method is vaguely isomorphic to a 
+      // [[http://wiki.apache.org/couchdb/HTTP_Document_API#PUT|HTTP PUT]] to a 
       // url with the specified {{{id}}}.
       //
+      // It creates or updates a document
       this.put = function DB_put(document, cb, options) {
         var putObj = function(obj){
           if (!obj._rev){
@@ -624,6 +630,13 @@ var BrowserCouch = function(opts){
             });
         }
   
+      // === {{{POST}}} ===
+      // 
+      // Roughly isomorphic to the two POST options
+      // available in the REST interface. If an ID is present,
+      // then the functionality is the same as a PUT operation,
+      // however if there is no ID, then one will be created.
+      //
       this.post =function(data, cb, options){
         var _t = this
         if (!data.id)
