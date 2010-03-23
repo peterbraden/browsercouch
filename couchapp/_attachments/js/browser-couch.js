@@ -557,8 +557,8 @@ var BrowserCouch = {
     if (options.sync)
       syncManager = SyncManager(name, this, options.sync);
 
-  var addToSyncQueue = function(document){
-    if (syncManager)
+    var addToSyncQueue = function(document){
+      if (syncManager)
         syncManager.enqueue(document)
     }
   
@@ -579,20 +579,35 @@ var BrowserCouch = {
       else
         cb(null);
     };
-
+    // === {{{PUT}}} ===
+    //
+    // This method is vaguely isomorphic to a HTTP PUT to a 
+    // url with the specified {{{id}}}.
     this.put = function DB_put(document, cb, options) {
+      var putObj = function(obj){
+        if (!obj._rev){
+          obj._rev = "1-" + (Math.random()*Math.pow(10,20)); 
+            // We're using the naive random versioning, rather
+            // than the md5 deterministic hash.
+        }else{
+          var iter = parseInt(obj._rev.split("-")[0]);
+          obj._rev = "" + (iter+1) +  
+            obj._rev.slice(obj._rev.indexOf("-"));
+        }
+        if(options && (!options.noSync))
+          addToSyncQueue(obj);
+        dict.set(obj.id, obj);  
+      }
+    
     options = options || {};
       if (isArray(document)) {
         for (var i = 0; i < document.length; i++){
-          dict.set(document[i].id, document[i]);
-          if(!options.noSync)
-            addToSyncQueue(document[i]);
+          putObj(document[i]);
         }
       } else{
-        dict.set(document.id, document);
-        if(!options.noSync)
-          addToSyncQueue(document);
+        putObj(document);
       }
+      
       commitToStorage(cb);
     };
     var ensureUUID = function(cb) {

@@ -14,7 +14,7 @@ table, tr, th, td{border: 1px solid #000;}
 		<script src="js/browser-couch.js"></script>
 		<script type='text/javascript'>
 $(function(){
-	var storage = new FakeStorage(), update = function(){};
+	var storage = new LocalStorage(), update = function(){};
 	
 	var tabulate = function(doc){
 		var t = $("<table />");
