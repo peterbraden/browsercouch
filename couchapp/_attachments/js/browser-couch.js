@@ -56,6 +56,25 @@ var BrowserCouch = function(opts){
     return Object.prototype.toString.call(value) === "[object Array]";
   }
   
+  var ensureUUID = function(cb) {
+    bc.ModuleLoader.require(
+     "UUID",
+      function() {
+        UUID = window.UUID;
+        cb();
+      });
+  }
+  
+  var ensureJSON = function (cb) {
+      bc.ModuleLoader.require(
+        "JSON",
+        function() {
+          JSON = window.JSON;
+          cb();
+        });
+  }
+
+  
   // === {{{ModuleLoader}}} ===
   //
   // A really basic module loader that allows dependencies to be
@@ -380,7 +399,7 @@ var BrowserCouch = function(opts){
   // Each database is stored in a key, as a JSON encoded string. In 
   // future we may want to rethink this as it's horribly inneficient
   
-  bc.LocalStorage = function LocalStorage(JSON) {
+  bc.LocalStorage = function LocalStorage() {
     var storage;
   
     if (window.globalStorage)
@@ -392,18 +411,7 @@ var BrowserCouch = function(opts){
         throw new Error("globalStorage/localStorage not available.");
     }
   
-    function ensureJSON(cb) {
-      if (!JSON) {
-        BrowserCouch.ModuleLoader.require(
-          "JSON",
-          function() {
-            JSON = window.JSON;
-            cb();
-          });
-      } else
-        cb();
-    }
-  
+      
     this.get = function LS_get(name, cb) {
       if (name in storage && storage[name].value)
         ensureJSON(
@@ -611,6 +619,7 @@ var BrowserCouch = function(opts){
       //
       // It creates or updates a document
       this.put = function DB_put(document, cb, options) {
+        options = options || {};
         var putObj = function(obj){
           if (!obj._rev){
             obj._rev = "1-" + (Math.random()*Math.pow(10,20)); 
@@ -626,7 +635,6 @@ var BrowserCouch = function(opts){
           dict.set(obj.id, obj);  
         }
       
-      options = options || {};
         if (isArray(document)) {
           for (var i = 0; i < document.length; i++){
             putObj(document[i]);
@@ -637,14 +645,8 @@ var BrowserCouch = function(opts){
         
         commitToStorage(cb);
       };
-      var ensureUUID = function(cb) {
-          ModuleLoader.require(
-            "UUID",
-            function() {
-              UUID = window.UUID;
-              cb();
-            });
-        }
+      
+
   
       // === {{{POST}}} ===
       // 
