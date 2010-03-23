@@ -70,23 +70,28 @@ var BrowserCouch = function(opts){
       var i = 0;
       var lastLib = "";
   
-      if (!isArray(libs))
+      if (!isArray(libs)){
         libs = [libs];
+      }
   
       function loadNextLib() {
-        if (lastLib && !window[lastLib])
+        if (lastLib && !window[lastLib]){
           throw new Error("Failed to load library: " + lastLib);
-        if (i == libs.length)
+        }
+        if (i == libs.length){
           cb();
+        }
         else {
           var libName = libs[i];
           i += 1;
-          if (window[libName])
+          if (window[libName]){
             loadNextLib();
+          }
           else {
             var libUrl = self.LIBS[libName];
-            if (!libUrl)
+            if (!libUrl){
               throw new Error("Unknown lib: " + libName);
+            }
             lastLib = libName;
             self._loadScript(libUrl, window, loadNextLib);
           }
@@ -132,8 +137,9 @@ var BrowserCouch = function(opts){
   // [[#js/worker-map-reducer.js|worker-map-reducer.js]].
   
   bc.WebWorkerMapReducer = function WebWorkerMapReducer(numWorkers, Worker) {
-    if (!Worker)
+    if (!Worker){
       Worker = window.Worker;
+    }
   
     var pool = [];
   
@@ -152,8 +158,9 @@ var BrowserCouch = function(opts){
       };
     }
   
-    for (var i = 0; i < numWorkers; i++)
+    for (var i = 0; i < numWorkers; i++){
       pool.push(new MapWorker(i));
+    }
   
     this.map = function WWMR_map(map, dict, progress, chunkSize, finished) {
       var keys = dict.getKeys();
@@ -166,11 +173,13 @@ var BrowserCouch = function(opts){
           var chunkKeys = keys.slice(0, chunkSize);
           keys = keys.slice(chunkSize);
           var chunk = {};
-          for (var i = 0; i < chunkKeys.length; i++)
+          for (var i = 0; i < chunkKeys.length; i++){
             chunk[chunkKeys[i]] = dict.get(chunkKeys[i]);
+          }
           return chunk;
-        } else
+        } else {
           return null;
+        }
       }
   
       function nextJob(mapWorker) {
@@ -180,41 +189,47 @@ var BrowserCouch = function(opts){
             map,
             chunk,
             function jobDone(aMapDict) {
-              for (name in aMapDict)
+              for (var name in aMapDict){
                 if (name in mapDict) {
                   var item = mapDict[name];
                   item.keys = item.keys.concat(aMapDict[name].keys);
                   item.values = item.values.concat(aMapDict[name].values);
-                } else
+                } else{
                   mapDict[name] = aMapDict[name];
-  
-              if (keys.length)
+                }
+              }
+              if (keys.length){
                 progress("map",
                          (size - keys.length) / size,
                          function() { nextJob(mapWorker); });
-              else
+              }else{
                 workerDone();
+              }
             });
-        } else
+        } else{
           workerDone();
+        }
       }
   
       function workerDone() {
         workersDone += 1;
-        if (workersDone == numWorkers)
+        if (workersDone == numWorkers){
           allWorkersDone();
+        }
       }
   
       function allWorkersDone() {
         var mapKeys = [];
-        for (name in mapDict)
+        for (var name in mapDict){
           mapKeys.push(name);
+        }
         mapKeys.sort();
         finished({dict: mapDict, keys: mapKeys});
       }
   
-      for (var i = 0; i < numWorkers; i++)
+      for (var i = 0; i < numWorkers; i++){
         nextJob(pool[i]);
+      }
     };
   
     // TODO: Actually implement our own reduce() method here instead
@@ -238,8 +253,9 @@ var BrowserCouch = function(opts){
         // an indexable value. We may have to hash the value,
         // though, if it's e.g. an Object.
         var item = mapDict[key];
-        if (!item)
+        if (!item){
           item = mapDict[key] = {keys: [], values: []};
+        }
         item.keys.push(currDoc.id);
         item.values.push(value);
       }
@@ -254,7 +270,7 @@ var BrowserCouch = function(opts){
           map(currDoc, emit);
           i++;
         } while (i - iAtStart < chunkSize &&
-                 i < keys.length)
+                 i < keys.length);
   
         if (i >= keys.length) {
           var mapKeys = [];
