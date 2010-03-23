@@ -41,6 +41,7 @@
 var BrowserCouch = function(opts){
   var bc = {};
   
+  // == Utility Functions ==
   
   // === {{{isArray()}}} ===
   //
