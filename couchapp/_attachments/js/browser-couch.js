@@ -423,7 +423,7 @@ var SyncManager = function(database, db, options){
         // We ping the {{{_all_docs_by_seq}}} endpoint to get the most
         // recent documents. Ultimately we'll want to page this.
 
-        var url = options.servers[0] + database + "/_all_docs_by_seq";
+        var url = options.server + database + "/_all_docs_by_seq";
         $.getJSON(url, {}, function(data){
 
           if (data && data.rows){
@@ -440,21 +440,18 @@ var SyncManager = function(database, db, options){
         // now, just iterate through the queue with a req for each
 
 		for(var x = queue.pop(); x; x = queue.pop()){
-            var url = "" + database + "/" + x.id;
-			x._rev = x._rev || "12345"; 
-			for (var s in options.servers){
-			  console.log("" + options.servers[s] + url, JSON.stringify(x));
-              $.ajax({
-                url : "" + options.servers[s] + url, 
-                data : JSON.stringify(x),
-                type : 'PUT',
-                processData : false,
-                contentType : 'application/json',
-                complete: function(data){
-			  	  console.log(data);
- 			    }
-			  });
-           }
+            var url = "" + database + "/" + x.id;	
+		    console.log("" + options.server + url, JSON.stringify(x));
+            $.ajax({
+              url : "" + options.server + url, 
+              data : JSON.stringify(x),
+              type : 'PUT',
+              processData : false,
+              contentType : 'application/json',
+              complete: function(data){
+		  	    console.log(data);
+			  }
+		  });
 		}
       }
 
