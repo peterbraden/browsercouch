@@ -50,14 +50,10 @@ var BrowserCouch = function(opts){
   // === {{{isArray()}}} ===
   //
   // A helper function to determine whether an object is an Array or
-  // not. Taken from
-  // [[http://javascript.crockford.com/remedial.html|Remedial JavaScript]]
-  // by Douglas Crockford.
+  // not. Taken from jQuery
   
   function isArray(value) {
-    return (typeof value.length === 'number' &&
-            !(value.propertyIsEnumerable('length')) &&
-            typeof value.splice === 'function');
+    return Object.prototype.toString.call(value) === "[object Array]";
   }
   
   // === {{{ModuleLoader}}} ===
