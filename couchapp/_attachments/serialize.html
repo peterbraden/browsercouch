@@ -5,12 +5,25 @@
   		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
   		<link rel="stylesheet" type="text/css" media="all"
         href="css/index.css" />
+        <style type='text/css'>
+table, tr, th, td{border: 1px solid #000;}
+        
+        </style>
   		<title>Serialization</title>
 		<script src="js/ext/jquery.js"></script>
 		<script src="js/browser-couch.js"></script>
 		<script type='text/javascript'>
 $(function(){
 	var storage = new FakeStorage(), update = function(){};
+	
+	var tabulate = function(doc){
+		var t = $("<table />");
+		for (var k in doc){
+			t.append("<tr><th>" + k + "</th><td>" + JSON.stringify(doc[k]) + "</td></tr");
+		}
+		return t;	
+	}
+	
 	BrowserCouch.get("browser-couch",
 		function(db){
 			update = function(){
@@ -19,12 +32,13 @@ $(function(){
 						$("#out").html("");
 						var rows = x.rows;
 						for (var y in rows){
-							$("#out").append("<tr><td>" + y + "</td><td>" + JSON.stringify(rows[y]) + "</td></tr>");	
+							var kv = tabulate(rows[y]);
+							$("#out").append($("<tr> /").append($("<th>" + y + "</th>")).append($("<td />").append(kv)));	
 						}
 					},
 					map : function(doc, emit){
 						if(doc){
-							emit(doc.id, doc.val);
+							emit(doc.id, doc);
 						}
 					}
 				})
