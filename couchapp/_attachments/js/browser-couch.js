@@ -417,6 +417,11 @@ var SyncManager = function(database, db, options){
       interval,   // For now we'll just have a sync interval
                   // running periodically   
       
+      getRemoteDoc = function(doc, callback){
+        var url = options.server + database + "/" + doc.id;
+        $.getJSON(url, {}, callback || function(){});
+      }
+      
       sync = function(){
     
         // === Get Changes ===
@@ -428,10 +433,17 @@ var SyncManager = function(database, db, options){
 
           if (data && data.rows){
             // TODO, screw it, for now we'll assume the servers right
-            db.put(data.rows, function(){}, {noSync:true});
-
-            if (options.updateCallback)
-              options.updateCallback();
+            for (var d in data.rows){
+              getRemoteDoc(data.rows[d], function(doc){
+                doc.id = doc["_id"];
+                console.log(doc);
+                db.put(doc, function(){}, {noSync:true});
+                if (options.updateCallback)
+                  options.updateCallback();
+              })
+            }
+            
+            
          }
       });
 
@@ -449,10 +461,10 @@ var SyncManager = function(database, db, options){
               processData : false,
               contentType : 'application/json',
               complete: function(data){
-            console.log(data);
-        }
-      });
-    }
+                console.log(data);
+              }
+            });
+          }
       }
 
 
@@ -573,12 +585,12 @@ var BrowserCouch = {
         for (var i = 0; i < document.length; i++){
           dict.set(document[i].id, document[i]);
           if(!options.noSync)
-        addToSyncQueue(document[i]);
+            addToSyncQueue(document[i]);
         }
       } else{
         dict.set(document.id, document);
         if(!options.noSync)
-      addToSyncQueue(document);
+          addToSyncQueue(document);
       }
       commitToStorage(cb);
     };
