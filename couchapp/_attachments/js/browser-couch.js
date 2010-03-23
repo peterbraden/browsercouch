@@ -37,7 +37,11 @@
 
 // = BrowserCouch =
 //
-// This is the primary implementation file for BrowserCouch.
+// BrowserCouch is a client side map-reduce data store, inspired by CouchDB. It
+// utilizes the browser's local storage where possible, and syncs to a CouchDB
+// server.
+//
+
 var BrowserCouch = function(opts){
   var bc = {};
   
