@@ -38,6 +38,8 @@
 // = BrowserCouch =
 //
 // This is the primary implementation file for BrowserCouch.
+var BrowserCouch = function(opts){
+
 
 // === {{{isArray()}}} ===
 //
@@ -57,7 +59,7 @@ function isArray(value) {
 // A really basic module loader that allows dependencies to be
 // "lazy-loaded" when their functionality is needed.
 
-var ModuleLoader = {
+ModuleLoader = {
   LIBS: {JSON: "js/ext/json2.js",
          UUID: "js/ext/uuid.js"},
 
@@ -127,7 +129,7 @@ var ModuleLoader = {
 // The script run by spawned Web Workers is
 // [[#js/worker-map-reducer.js|worker-map-reducer.js]].
 
-function WebWorkerMapReducer(numWorkers, Worker) {
+WebWorkerMapReducer = function WebWorkerMapReducer(numWorkers, Worker) {
   if (!Worker)
     Worker = window.Worker;
 
@@ -222,7 +224,7 @@ function WebWorkerMapReducer(numWorkers, Worker) {
 //
 // A MapReducer that works on the current thread.
 
-var SingleThreadedMapReducer = {
+SingleThreadedMapReducer = {
   map: function STMR_map(map, dict, progress,
                          chunkSize, finished) {
     var mapDict = {};
@@ -311,7 +313,7 @@ var SingleThreadedMapReducer = {
 // a placeholder that can be used for testing purposes, or when no
 // persistent storage mechanisms are available.
 
-function FakeStorage() {
+FakeStorage = function FakeStorage() {
   var db = {};
 
   function deepCopy(obj) {
@@ -356,7 +358,7 @@ function FakeStorage() {
 // This Storage implementation uses the browser's HTML5 support for
 // {{{localStorage}}} or {{{globalStorage}}} for object persistence.
 
-function LocalStorage(JSON) {
+LocalStorage = function LocalStorage(JSON) {
   var storage;
 
   if (window.globalStorage)
@@ -579,10 +581,12 @@ var BrowserCouch = {
       else
         cb(null);
     };
+    
     // === {{{PUT}}} ===
     //
     // This method is vaguely isomorphic to a HTTP PUT to a 
     // url with the specified {{{id}}}.
+    //
     this.put = function DB_put(document, cb, options) {
       var putObj = function(obj){
         if (!obj._rev){
@@ -762,3 +766,5 @@ var BrowserCouch = {
     };
   }
 };
+  return BrowserCouch
+}();  
