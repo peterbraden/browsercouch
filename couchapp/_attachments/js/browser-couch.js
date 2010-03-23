@@ -596,6 +596,12 @@ var BrowserCouch = {
       commitToStorage(cb);
     };
 
+    this.post =function(data, cb, options){
+      if (!data.id)
+        data.id = UUID.createUUID();
+      this.put(data, function(){cb(data.id)}, options)  
+    }
+
     this.getLength = function DB_getLength() {
       return dict.getKeys().length;
     };

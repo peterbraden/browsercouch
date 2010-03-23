@@ -45,10 +45,9 @@ $(function(){
 			};
 
 			$("#add").click(function(){
-				var key = $("#key").val(),
-					val = $("#val").val();
+				val = $("#val").val();
 				if (key && val){
-					db.put([{id: key, val: val}], function(){update()});
+					db.post(JSON.parse(val), function(){update()});
 				}
 				return false;
 			});
@@ -68,7 +67,6 @@ $(function(){
 	<body>
 		<h1>Serialization</h1>
 		<form action ="#">
-			<input id = 'key' />
 			<input id = 'val' />
 			<a href ="#" id='add'>Add</a>
 		</form>
