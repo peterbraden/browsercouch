@@ -397,7 +397,7 @@ var BrowserCouch = function(opts){
   // {{{localStorage}}} or {{{globalStorage}}} for object persistence.
   //
   // Each database is stored in a key, as a JSON encoded string. In 
-  // future we may want to rethink this as it's horribly inneficient
+  // future we may want to rethink this as it's horribly innefficient
   
   bc.LocalStorage = function LocalStorage() {
     var storage;

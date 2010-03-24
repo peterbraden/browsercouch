@@ -19,9 +19,8 @@ From couchapp directory
 TODO:
 
  -- 
- - Sort out Revisioning
-
- - Make more intelligent storage class based on B-Tree so we can 
-   more easily sync recent changes
-
+ - Store sequence ID and use for syncing - need another database
+ - Switch id to _id
+ - 
+ - Cache storage 
  
