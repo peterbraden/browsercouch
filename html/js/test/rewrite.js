@@ -9,18 +9,18 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations under
 // the License.
- 
- 
- 
+
+
+
 couchTests.rewrite = function(debug) {
   // this test _rewrite handler
-  
-  
+
+
   var db = new CouchDB("test_suite_db", {"X-Couch-Full-Commit":"false"});
   db.deleteDb();
   db.createDb();
-  
-  
+
+
   if (debug) debugger;
   run_on_modified_server(
     [{section: "httpd",
@@ -29,7 +29,7 @@ couchTests.rewrite = function(debug) {
      {section:"httpd",
       key: "WWW-Authenticate",
       value: "X-Couch-Test-Auth"}],
-      
+
       function(){
         var designDoc = {
           _id:"_design/test",
@@ -135,8 +135,8 @@ couchTests.rewrite = function(debug) {
               "from": "uuids",
               "to": "../../../_uuids"
             }
-            
-            
+
+
           ],
           lists: {
             simpleForm: stringFun(function(head, req) {
@@ -195,7 +195,7 @@ couchTests.rewrite = function(debug) {
                 if (doc.integer) {
                   emit(doc.integer, doc.string);
                 }
-                
+
               })
             },
             complexView: {
@@ -214,9 +214,9 @@ couchTests.rewrite = function(debug) {
             }
           }
         }
- 
+
         db.save(designDoc);
-        
+
         var docs = makeDocs(0, 10);
         db.bulkSave(docs);
 
@@ -231,102 +231,102 @@ couchTests.rewrite = function(debug) {
         db.bulkSave(docs2);
 
         // test simple rewriting
- 
+
         req = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/foo");
         T(req.responseText == "This is a base64 encoded text");
         T(req.getResponseHeader("Content-Type") == "text/plain");
-        
+
         req = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/foo2");
         T(req.responseText == "This is a base64 encoded text");
         T(req.getResponseHeader("Content-Type") == "text/plain");
-        
-       
+
+
         // test POST
         // hello update world
-        
+
         var doc = {"word":"plankton", "name":"Rusty"}
         var resp = db.save(doc);
         T(resp.ok);
         var docid = resp.id;
-        
+
         xhr = CouchDB.request("PUT", "/test_suite_db/_design/test/_rewrite/hello/"+docid);
         T(xhr.status == 201);
         T(xhr.responseText == "hello doc");
         T(/charset=utf-8/.test(xhr.getResponseHeader("Content-Type")))
- 
+
         doc = db.open(docid);
         T(doc.world == "hello");
-        
+
         req = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/welcome?name=user");
         T(req.responseText == "Welcome user");
-        
+
         req = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/welcome/user");
         T(req.responseText == "Welcome user");
-        
+
         req = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/welcome2");
         T(req.responseText == "Welcome user");
-        
+
         xhr = CouchDB.request("PUT", "/test_suite_db/_design/test/_rewrite/welcome3/test");
         T(xhr.status == 201);
         T(xhr.responseText == "New World");
         T(/charset=utf-8/.test(xhr.getResponseHeader("Content-Type")));
-        
+
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/welcome3/test");
         T(xhr.responseText == "Welcome test");
-        
-        
+
+
         // get with query params
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/basicView?startkey=3&endkey=8");
         T(xhr.status == 200, "with query params");
         T(!(/Key: 1/.test(xhr.responseText)));
         T(/FirstKey: 3/.test(xhr.responseText));
         T(/LastKey: 8/.test(xhr.responseText));
-        
+
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/basicViewFixed");
         T(xhr.status == 200, "with query params");
         T(!(/Key: 1/.test(xhr.responseText)));
         T(/FirstKey: 3/.test(xhr.responseText));
         T(/LastKey: 8/.test(xhr.responseText));
-        
+
         // get with query params
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/basicViewFixed?startkey=4");
         T(xhr.status == 200, "with query params");
         T(!(/Key: 1/.test(xhr.responseText)));
         T(/FirstKey: 3/.test(xhr.responseText));
         T(/LastKey: 8/.test(xhr.responseText));
-        
+
         // get with query params
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/basicViewPath/3/8");
         T(xhr.status == 200, "with query params");
         T(!(/Key: 1/.test(xhr.responseText)));
         T(/FirstKey: 3/.test(xhr.responseText));
         T(/LastKey: 8/.test(xhr.responseText));
-        
-        // get with query params        
+
+        // get with query params
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/complexView");
         T(xhr.status == 200, "with query params");
         T(/FirstKey: [1, 2]/.test(xhr.responseText));
-        
+
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/complexView2");
         T(xhr.status == 200, "with query params");
         T(/Value: doc 3/.test(xhr.responseText));
-        
+
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/complexView3");
         T(xhr.status == 200, "with query params");
         T(/Value: doc 4/.test(xhr.responseText));
-        
+
         xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/simpleForm/complexView4");
         T(xhr.status == 200, "with query params");
         T(/Value: doc 5/.test(xhr.responseText));
-        
-        
+
+
         // test path relative to server
-        
+
         var xhr = CouchDB.request("GET", "/test_suite_db/_design/test/_rewrite/uuids");
         T(xhr.status == 200);
         var result = JSON.parse(xhr.responseText);
         T(result.uuids.length == 1);
         var first = result.uuids[0];
   });
-  
+
 }

@@ -16,7 +16,7 @@ couchTests.update_documents = function(debug) {
   db.deleteDb();
   db.createDb();
   if (debug) debugger;
-      
+
   var designDoc = {
     _id:"_design/update",
     language: "javascript",
@@ -33,8 +33,8 @@ couchTests.update_documents = function(debug) {
             // and returns an HTML response to the client.
             "<p>New World</p>"];
           };
-          // 
-          return [null, "<p>Empty World</p>"];          
+          //
+          return [null, "<p>Empty World</p>"];
         };
         // we can update the document inline
         doc.world = "hello";
@@ -70,13 +70,13 @@ couchTests.update_documents = function(debug) {
           },
           "body" : xml.toXMLString()
         };
-         
+
          return [doc, resp];
        })
     }
   };
   T(db.save(designDoc).ok);
-  
+
   var doc = {"word":"plankton", "name":"Rusty"}
   var resp = db.save(doc);
   T(resp.ok);
@@ -86,7 +86,7 @@ couchTests.update_documents = function(debug) {
   var xhr = CouchDB.request("POST", "/test_suite_db/_design/update/_update/");
   T(xhr.status == 404, 'Should be missing');
   T(JSON.parse(xhr.responseText).reason == "Invalid path.");
-  
+
   // hello update world
   xhr = CouchDB.request("PUT", "/test_suite_db/_design/update/_update/hello/"+docid);
   T(xhr.status == 201);
@@ -114,13 +114,13 @@ couchTests.update_documents = function(debug) {
   T(xhr.status == 201);
   T(xhr.responseText == "<p>New World</p>");
 
-  // in place update 
+  // in place update
   xhr = CouchDB.request("PUT", "/test_suite_db/_design/update/_update/in-place/"+docid+'?field=title&value=test');
   T(xhr.status == 201);
   T(xhr.responseText == "set title to test");
   doc = db.open(docid);
   T(doc.title == "test");
-  
+
   // bump counter
   xhr = CouchDB.request("PUT", "/test_suite_db/_design/update/_update/bump-counter/"+docid, {
     headers : {"X-Couch-Full-Commit":"false"}
@@ -129,12 +129,12 @@ couchTests.update_documents = function(debug) {
   T(xhr.responseText == "<h1>bumped it!</h1>");
   doc = db.open(docid);
   T(doc.counter == 1);
-  
+
   // _update honors full commit if you need it to
   xhr = CouchDB.request("PUT", "/test_suite_db/_design/update/_update/bump-counter/"+docid, {
     headers : {"X-Couch-Full-Commit":"true"}
   });
-  
+
   doc = db.open(docid);
   T(doc.counter == 2);
 
@@ -145,7 +145,7 @@ couchTests.update_documents = function(debug) {
   });
   T(xhr.status == 201);
   T(xhr.responseText == "<xml>\n  <title>test</title>\n</xml>");
-  
+
   doc = db.open(docid);
   T(doc.via_xml == "bar");
 

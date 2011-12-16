@@ -26,11 +26,11 @@ couchTests.view_collation_raw = function(debug) {
   values.push(2);
   values.push(3);
   values.push(4);
-  
+
   values.push(false);
   values.push(null);
   values.push(true);
-  
+
   // then object, compares each key value in the list until different.
   // larger objects sort after their subset objects.
   values.push({a:1});
@@ -110,12 +110,12 @@ couchTests.view_collation_raw = function(debug) {
   var rows = db.view("test/test", {endkey : "b",
     descending:true, inclusive_end:false}).rows;
   T(rows[rows.length-1].key == "ba")
-  
+
   var rows = db.view("test/test", {
     endkey : "b", endkey_docid: "10",
     inclusive_end:false}).rows;
   T(rows[rows.length-1].key == "aa")
-  
+
   var rows = db.view("test/test", {
     endkey : "b", endkey_docid: "11",
     inclusive_end:false}).rows;

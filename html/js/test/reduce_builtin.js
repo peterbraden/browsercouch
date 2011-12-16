@@ -22,7 +22,7 @@ couchTests.reduce_builtin = function(debug) {
 
   var summate = function(N) {return (N+1)*N/2;};
 
-  var sumsqr = function(N) { 
+  var sumsqr = function(N) {
     var acc = 0;
     for (var i=1; i<=N; ++i) {
       acc += i*i;

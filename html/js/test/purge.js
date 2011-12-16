@@ -56,7 +56,7 @@ couchTests.purge = function(debug) {
 
   var result = JSON.parse(xhr.responseText);
   var newInfo = db.info();
-  
+
   // purging increments the update sequence
   T(info.update_seq+1 == newInfo.update_seq);
   // and it increments the purge_seq

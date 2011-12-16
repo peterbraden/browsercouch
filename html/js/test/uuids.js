@@ -19,7 +19,7 @@ couchTests.uuids = function(debug) {
     var newetag = xhr.getResponseHeader("ETag");
     T(etags.indexOf(newetag) < 0);
     etags[etags.length] = newetag;
-    
+
     // Removing the time based tests as they break easily when
     // running CouchDB on a remote server in regards to the browser
     // running the Futon test suite.

@@ -12,7 +12,7 @@
 
 couchTests.cookie_auth = function(debug) {
   // This tests cookie-based authentication.
-  
+
   var db = new CouchDB("test_suite_db", {"X-Couch-Full-Commit":"false"});
   db.deleteDb();
   db.createDb();
@@ -35,13 +35,13 @@ couchTests.cookie_auth = function(debug) {
       var usersDb = new CouchDB("test_suite_users", {"X-Couch-Full-Commit":"false"});
       usersDb.deleteDb();
       usersDb.createDb();
-      
+
       // test that the users db is born with the auth ddoc
       var ddoc = usersDb.open("_design/_auth");
       T(ddoc.validate_doc_update);
-      
+
       // TODO test that changing the config so an existing db becomes the users db installs the ddoc also
-      
+
       var password = "3.141592653589";
 
       // Create a user
@@ -49,11 +49,11 @@ couchTests.cookie_auth = function(debug) {
         name: "Jason Davies",
         roles: ["dev"]
       }, password);
-      T(usersDb.save(jasonUserDoc).ok);      
-      
+      T(usersDb.save(jasonUserDoc).ok);
+
       var checkDoc = usersDb.open(jasonUserDoc._id);
       T(checkDoc.name == "Jason Davies");
-      
+
       var jchrisUserDoc = CouchDB.prepareUserDoc({
         name: "jchris@apache.org"
       }, "funnybone");
@@ -71,7 +71,7 @@ couchTests.cookie_auth = function(debug) {
         T(e.error == "conflict");
         T(usersDb.last_req.status == 409);
       }
-      
+
       // we can't create _names
       var underscoreUserDoc = CouchDB.prepareUserDoc({
         name: "_why"
@@ -84,12 +84,12 @@ couchTests.cookie_auth = function(debug) {
         T(e.error == "forbidden");
         T(usersDb.last_req.status == 403);
       }
-      
+
       // we can't create docs with malformed ids
       var badIdDoc = CouchDB.prepareUserDoc({
         name: "foo"
       }, "bar");
-      
+
       badIdDoc._id = "org.apache.couchdb:w00x";
 
       try {
@@ -99,11 +99,11 @@ couchTests.cookie_auth = function(debug) {
         T(e.error == "forbidden");
         T(usersDb.last_req.status == 403);
       }
-      
+
       // login works
       T(CouchDB.login('Jason Davies', password).ok);
       T(CouchDB.session().userCtx.name == 'Jason Davies');
-      
+
       // update one's own credentials document
       jasonUserDoc.foo=2;
       T(usersDb.save(jasonUserDoc).ok);
@@ -142,12 +142,12 @@ couchTests.cookie_auth = function(debug) {
        }
 
       // test users db validations
-      // 
+      //
       // test that you can't update docs unless you are logged in as the user (or are admin)
       T(CouchDB.login("jchris@apache.org", "funnybone").ok);
       T(CouchDB.session().userCtx.name == "jchris@apache.org");
       T(CouchDB.session().userCtx.roles.length == 0);
-      
+
       jasonUserDoc.foo=3;
 
       try {
@@ -160,7 +160,7 @@ couchTests.cookie_auth = function(debug) {
 
       // test that you can't edit roles unless you are admin
       jchrisUserDoc.roles = ["foo"];
-      
+
       try {
         usersDb.save(jchrisUserDoc)
         T(false && "Can't set roles unless you are admin. Should have thrown an error.");
@@ -168,16 +168,16 @@ couchTests.cookie_auth = function(debug) {
         T(e.error == "forbidden");
         T(usersDb.last_req.status == 403);
       }
-      
+
       T(CouchDB.logout().ok);
-      T(CouchDB.session().userCtx.roles[0] == "_admin");      
+      T(CouchDB.session().userCtx.roles[0] == "_admin");
 
       jchrisUserDoc.foo = ["foo"];
       T(usersDb.save(jchrisUserDoc).ok);
 
       // test that you can't save system (underscore) roles even if you are admin
       jchrisUserDoc.roles = ["_bar"];
-      
+
       try {
         usersDb.save(jchrisUserDoc)
         T(false && "Can't add system roles to user's db. Should have thrown an error.");
@@ -185,18 +185,18 @@ couchTests.cookie_auth = function(debug) {
         T(e.error == "forbidden");
         T(usersDb.last_req.status == 403);
       }
-      
+
       // make sure the foo role has been applied
       T(CouchDB.login("jchris@apache.org", "funnybone").ok);
       T(CouchDB.session().userCtx.name == "jchris@apache.org");
       T(CouchDB.session().userCtx.roles.indexOf("_admin") == -1);
       T(CouchDB.session().userCtx.roles.indexOf("foo") != -1);
-      
+
       // now let's make jchris a server admin
       T(CouchDB.logout().ok);
       T(CouchDB.session().userCtx.roles[0] == "_admin");
       T(CouchDB.session().userCtx.name == null);
-      
+
       // set the -hashed- password so the salt matches
       // todo ask on the ML about this
       run_on_modified_server([{section: "admins",
@@ -222,7 +222,7 @@ couchTests.cookie_auth = function(debug) {
           T(s.info.authentication_db == "test_suite_users");
           // test that jchris still has the foo role
           T(CouchDB.session().userCtx.roles.indexOf("foo") != -1);
-        });      
+        });
 
     } finally {
       // Make sure we erase any auth cookies so we don't affect other tests

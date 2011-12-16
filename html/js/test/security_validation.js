@@ -166,14 +166,14 @@ couchTests.security_validation = function(debug) {
         T(e.error == "unauthorized");
         T(userDb.last_req.status == 401);
       }
-      
+
       // admin must save with author field unless admin override
       var resp = db.request("GET", "/_session");
       var user = JSON.parse(resp.responseText).userCtx;
       T(user.name == null);
       // test that we are admin
       TEquals(user.roles, ["_admin"]);
-      
+
       // can't save the doc even though we are admin
       var doc = db.open("testdoc");
       doc.foo=3;

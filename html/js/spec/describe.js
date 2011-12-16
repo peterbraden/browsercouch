@@ -96,13 +96,13 @@ describe.Spec.prototype = {
         */
     	if (this.next == 0 && this._beforeAll)
     	    this._beforeAll()
-    	
+
     	this.runOne(this.next)
     	//this.tryFinish()
         if (this.finished && !this.handledFinish){
-            
+
             this.handledFinish = true
-            //describe.print(this + ' is finished')   
+            //describe.print(this + ' is finished')
             describe.runNext()
         }
     },
@@ -133,7 +133,7 @@ describe.Spec.prototype = {
                 if (lines[0] == String(error))
                     lines = lines.slice(1)
                 //lines = lines.slice(0, 3).map(function(p){return '    ' + p})
-                
+
                 print(lines.join('\n'))
             }
         }
@@ -199,7 +199,7 @@ describe.Test = function(spec, idx, name, func, options){
 		    this.setState('running')
 		    try{
 		        this.testFunc()
-		        
+
             	if (this.options.async){
         		    var timeout = this.options.asyncTimeout || 1000
         		    setTimeout((function(test){
@@ -281,7 +281,7 @@ describe.Test.States = {
             this.spec.runNext()
         }
     }
-    
+
 }
 
 describe.TestResult = function(error){
@@ -302,12 +302,12 @@ describe.Assertion.prototype = {
     toEqual: function(other){
         var e = null
         var one = this.one
-        if ((one && one.constructor === Date) && 
+        if ((one && one.constructor === Date) &&
             (other && other.constructor === Date)){
             one = one.getTime()
             other = other.getTime()
         }
-        else if ((one && one.constructor === Array) && 
+        else if ((one && one.constructor === Array) &&
             (other && other.constructor === Array)){
             if (one.length != other.length)
                 error = new Error("Expected " + other + " but got " + one)
@@ -315,7 +315,7 @@ describe.Assertion.prototype = {
                 if (one[i] != other[i])
                     e = new Error("Expected " + other + " but got " + one)
         }
-        else if ((one && one.constructor === Object) && 
+        else if ((one && one.constructor === Object) &&
             (other && other.constructor === Object)){
           function listRepr(obj){
             var ret = []

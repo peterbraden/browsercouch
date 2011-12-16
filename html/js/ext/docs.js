@@ -95,9 +95,9 @@ App.processCode = function processCode(code, div) {
                    numLines: 0,
                    lastCode : _lineNum,
                    code: codeText});
-    
+
     }
-                    
+
   }
 
   jQuery.each(
@@ -137,17 +137,17 @@ App.processCode = function processCode(code, div) {
       },
       linkFormat: ''
     });
-  
+
   var cont = [];
   var headers = ['h1', 'h2', 'h3', 'h4', "strong"];
-  
+
   jQuery.each(
     blocks,
     function(i) {
       var docs = $('<div class="documentation">');
       docs.css(App.columnCss);
       creole.parse(docs.get(0), this.text);
-      
+
       for(var h in headers){
         var hd = headers[h];
         if (docs.find(hd).length > 0){
@@ -181,7 +181,7 @@ App.processCode = function processCode(code, div) {
     function(i) {
       App.processors[i]($(div).find(".documentation"));
     });
-    
+
   // == Table Of Contents ==
   var ul = $("<ul class = 'toc' />");
   for (var k in cont){
@@ -191,7 +191,7 @@ App.processCode = function processCode(code, div) {
     ul.append(ln);
   }
   //div.prepend(ul);
-     
+
 };
 
 // ** {{{ App.addMenuItem() }}} **
@@ -282,7 +282,7 @@ App.navigate = function navigate() {
       App.pages[newPage] = newDiv;
       jQuery.get(newPage,
                  {},
-                 function(code) { 
+                 function(code) {
                    App.processCode(code, newDiv);
                    prettyPrint();},
                  "text");

@@ -21,7 +21,7 @@ var repaint = function(db){
 				var rows = x.rows;
 				for (var y in rows){
 					console.log(rows[y]);
-					$("#bookmarks").append($("<li>" + rows[y].value + "</li>"));	
+					$("#bookmarks").append($("<li>" + rows[y].value + "</li>"));
 				}
 			},
 		map : function(doc, emit){
@@ -29,45 +29,45 @@ var repaint = function(db){
 				emit(doc.id, doc.url);
 				}
 			}
-		});	
+		});
 	});
 }
 
 
 $(function(){
 	console.log("Document Loaded");
-  
+
   var db = BrowserCouch('bookmarks');
-	
+
 	console.log("Database Created");
-	
+
 	db.sync(['http://localhost:5984/bookmarks'],
 		{'continuous' :true,
 		 'interval' :5000,
 		 'update' : function(){repaint(db)}
 		 });
-	
+
 	console.log("Database Sync Setup");
-		
+
 	db.onload(function(){
 		console.log("Loaded");
 		repaint(db);
-	});	
+	});
 
-});  	
+});
   	</script>
-  	
-  	
-  	
+
+
+
   </head>
 	<body>
 		<h1>Bookmarks</h1>
 		<p>This is an application to demonstrate/experiment with
-			uses of browsercouch. Explore the code 
+			uses of browsercouch. Explore the code
 			<a href="index.html#bookmarks.js">here</a>.
 		</p>
 		<div id = "bookmarks">
 			<p>Loading...
-		</div>	
+		</div>
 	</body>
 </html>
