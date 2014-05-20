@@ -91,12 +91,12 @@ couchTests.view_include_docs = function(debug) {
     "_id": "link-to-10",
     "link_id" : "10"
   }).ok);
-  
+
   // you can link to another doc from a value.
   resp = db.view("test/with_id", {key:"link-to-10"});
   T(resp.rows[0].key == "link-to-10");
   T(resp.rows[0].value["_id"] == "10");
-  
+
   resp = db.view("test/with_id", {key:"link-to-10",include_docs: true});
   T(resp.rows[0].key == "link-to-10");
   T(resp.rows[0].value["_id"] == "10");
@@ -111,7 +111,7 @@ couchTests.view_include_docs = function(debug) {
   after.prev = after._rev;
   resp = db.save(after)
   T(resp.ok);
-  
+
   var after = db.open("0");
   TEquals(resp.rev, after._rev, "fails with firebug running");
   T(after._rev != after.prev, "passes");

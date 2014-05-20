@@ -13,7 +13,7 @@
 (function($) {
 
   function Session() {
-    
+
     function doLogin(name, password, callback) {
       $.couch.login({
         name : name,
@@ -28,14 +28,14 @@
         }
       });
     };
-    
+
     function doSignup(name, password, callback, runLogin) {
       $.couch.signup({
         name : name
       }, password, {
         success : function() {
           if (runLogin) {
-            doLogin(name, password, callback);            
+            doLogin(name, password, callback);
           } else {
             callback();
           }
@@ -50,7 +50,7 @@
         }
       });
     };
-    
+
     function validateUsernameAndPassword(data, callback) {
       if (!data.name || data.name.length == 0) {
         callback({name: "Please enter a name."});
@@ -62,7 +62,7 @@
       };
       return true;
     };
-    
+
     function createAdmin() {
       $.showDialog("dialog/_create_admin.html", {
         submit: function(data, callback) {
@@ -77,7 +77,7 @@
                 doSignup(data.name, null, function(errors) {
                   callback(errors);
                   }, false);
-                });            
+                });
             }
           }, "admins", data.name, data.password);
         }
@@ -119,7 +119,7 @@
       $("#userCtx .signup").click(signup);
       $("#userCtx .createadmin").click(createAdmin);
     };
-    
+
     this.sidebar = function() {
       // get users db info?
       $("#userCtx span").hide();

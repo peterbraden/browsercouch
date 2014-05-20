@@ -282,11 +282,11 @@ couchTests.replication = function(debug) {
 
   var dbA = new CouchDB("test_suite_db_a", {"X-Couch-Full-Commit":"false"});
   var dbB = new CouchDB("test_suite_db_b", {"X-Couch-Full-Commit":"false"});
-  
+
   dbA.deleteDb();
   dbA.createDb();
   dbB.deleteDb();
-  
+
   // local
   CouchDB.replicate(dbA.name, "test_suite_db_b", {
     body: {"create_target": true}

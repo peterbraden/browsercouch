@@ -51,13 +51,13 @@ couchTests.stats = function(debug) {
   (function() {
     var db = newDb("test_suite_db");
     db.deleteDb();
-  
+
     var before = getStat("couchdb", "open_databases").current;
     db.createDb();
     var after = getStat("couchdb", "open_databases").current;
     TEquals(before+1, after, "Creating a db increments open db count.");
   })();
-  
+
   runTest("couchdb", "open_databases", {
     setup: function() {restartServer();},
     run: function(db) {db.open("123");},
@@ -65,22 +65,22 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Opening a db increments open db count.");
     }
   });
-  
+
   runTest("couchdb", "open_databases", {
     run: function(db) {db.deleteDb();},
     test: function(before, after) {
       TEquals(before-1, after, "Deleting a db decrements open db count.");
     }
   });
-  
+
   (function() {
     restartServer();
     var max = 5;
-    
+
     var testFun = function() {
       var pre_dbs = getStat("couchdb", "open_databases").current || 0;
       var pre_files = getStat("couchdb", "open_os_files").current || 0;
-     
+
       // We have to make sure that as we open the max'th database
       // that we've waited for more than 1 second since opening
       // the first database so that any delayed commits will be
@@ -100,27 +100,27 @@ couchTests.stats = function(debug) {
         db.save({_id: "" + i, "lang": "Awesome!"});
       }
       T(triggered, "We managed to force a all_dbs_active error.");
-      
+
       var open_dbs = getStat("couchdb", "open_databases").current;
       TEquals(open_dbs > 0, true, "We actually opened some dbs.");
       TEquals(open_dbs, max, "We only have max db's open.");
-      
+
       for(var i = 0; i < max * 2; i++) {
         newDb("test_suite_db_" + i).deleteDb();
       }
-      
+
       var post_dbs = getStat("couchdb", "open_databases").current;
       var post_files = getStat("couchdb", "open_os_files").current;
       TEquals(pre_dbs, post_dbs, "We have the same number of open dbs.");
       TEquals(pre_files, post_files, "We have the same number of open files.");
     };
-    
+
     run_on_modified_server(
       [{section: "couchdb", key: "max_dbs_open", value: "5"}],
       testFun
     );
   })();
-  
+
   // Just fetching the before value is the extra +1 in test
   runTest("httpd", "requests", {
     run: function() {CouchDB.request("GET", "/");},
@@ -128,7 +128,7 @@ couchTests.stats = function(debug) {
       TEquals(before+2, after, "Request counts are incremented properly.");
     }
   });
-  
+
   runTest("couchdb", "database_reads", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {db.open("test");},
@@ -136,7 +136,7 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Reading a doc increments docs reads.");
     }
   });
-  
+
   runTest("couchdb", "database_reads", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {db.request("GET", "/");},
@@ -144,7 +144,7 @@ couchTests.stats = function(debug) {
       TEquals(before, after, "Only doc reads increment doc reads.");
     }
   });
-  
+
   runTest("couchdb", "database_reads", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {db.open("test", {"open_revs": "all"});},
@@ -152,14 +152,14 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Reading doc revs increments docs reads.");
     }
   });
-  
+
   runTest("couchdb", "database_writes", {
     run: function(db) {db.save({"a": "1"});},
     test: function(before, after) {
       TEquals(before+1, after, "Saving docs incrememnts doc writes.");
     }
   });
-  
+
   runTest("couchdb", "database_writes", {
     run: function(db) {
       CouchDB.request("POST", "/test_suite_db", {body: '{"a": "1"}'})
@@ -168,7 +168,7 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "POST'ing new docs increments doc writes.");
     }
   })
-  
+
   runTest("couchdb", "database_writes", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {var doc = db.open("test"); db.save(doc);},
@@ -176,7 +176,7 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Updating docs incrememnts doc writes.");
     }
   });
-  
+
   runTest("couchdb", "database_writes", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {var doc = db.open("test"); db.deleteDoc(doc);},
@@ -184,7 +184,7 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Deleting docs increments doc writes.");
     }
   });
-  
+
   runTest("couchdb", "database_writes", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {
@@ -196,7 +196,7 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Copying docs increments doc writes.");
     }
   });
-  
+
   runTest("couchdb", "database_writes", {
     run: function() {
       CouchDB.request("PUT", "/test_suite_db/bin_doc2/foo2.txt", {
@@ -208,7 +208,7 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Create with attachment increments doc writes.");
     }
   });
-  
+
   runTest("couchdb", "database_writes", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {
@@ -222,21 +222,21 @@ couchTests.stats = function(debug) {
       TEquals(before+1, after, "Adding attachment increments doc writes.");
     }
   });
-  
+
   runTest("httpd", "bulk_requests", {
     run: function(db) {db.bulkSave(makeDocs(5));},
     test: function(before, after) {
       TEquals(before+1, after, "The bulk_requests counter is incremented.");
     }
   });
-  
+
   runTest("httpd", "view_reads", {
     run: function(db) {doView(db);},
     test: function(before, after) {
       TEquals(before+1, after, "Reading a view increments view reads.");
     }
   });
-  
+
   runTest("httpd", "view_reads", {
     setup: function(db) {db.save({"_id": "test"});},
     run: function(db) {db.open("test");},
@@ -244,56 +244,56 @@ couchTests.stats = function(debug) {
       TEquals(before, after, "Reading a doc doesn't increment view reads.");
     }
   });
-  
+
   runTest("httpd", "temporary_view_reads", {
     run: function(db) {db.query(function(doc) {emit(doc._id)})},
     test: function(before, after) {
       TEquals(before+1, after, "Temporary views have their own counter.");
     }
   });
-  
+
   runTest("httpd", "temporary_view_reads", {
     run: function(db) {doView(db);},
     test: function(before, after) {
       TEquals(before, after, "Permanent views don't affect temporary views.");
     }
   });
-  
+
   runTest("httpd", "view_reads", {
     run: function(db) {db.query(function(doc) {emit(doc._id)});},
     test: function(before, after) {
       TEquals(before, after, "Temporary views don't affect permanent views.");
     }
   });
-  
+
   // Relies on getting the stats values being GET requests.
   runTest("httpd_request_methods", "GET", {
     test: function(before, after) {
       TEquals(before+1, after, "Get requests are incremented properly.");
     }
   });
-  
+
   runTest("httpd_request_methods", "GET", {
     run: function() {CouchDB.request("POST", "/");},
     test: function(before, after) {
       TEquals(before+1, after, "POST requests don't affect GET counter.");
     }
   });
-  
+
   runTest("httpd_request_methods", "POST", {
     run: function() {CouchDB.request("POST", "/");},
     test: function(before, after) {
       TEquals(before+1, after, "POST requests are incremented properly.");
     }
   });
-  
+
   runTest("httpd_status_codes", "404", {
     run: function() {CouchDB.request("GET", "/nonexistant_db");},
     test: function(before, after) {
       TEquals(before+1, after, "Increments 404 counter on db not found.");
     }
   });
-  
+
   runTest("httpd_status_codes", "404", {
     run: function() {CouchDB.request("GET", "/");},
     test: function(before, after) {

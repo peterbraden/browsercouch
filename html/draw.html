@@ -1,33 +1,33 @@
-<html> 
+<html>
 	<head>
 		<script src = 'js/ext/jquery.js'></script>
 		<script src = 'js/plib.js'></script>
 		<script src = '../browser-couch.js'></script>
 		<style type = "text/css">
-body{padding:0; margin:0;}		
+body{padding:0; margin:0;}
 		</style>
-		
+
 		<script type="text/javascript">
 
 $(function(){
-	var vec = plib.v2, 
+	var vec = plib.v2,
 		screen = $("#draw")[0],
 		ctx = screen.getContext('2d'),
 		draw = false;
 		prev = [0,0];
 		mousepos = [0,0];
-		
-		
+
+
 	screen.width = document.body.clientWidth;
 	screen.height = document.body.clientHeight;
 
-	
+
 	//Background
 	ctx.fillStyle = "#fff";
 	ctx.fillRect (0, 0, screen.width, screen.height);
 	ctx.strokeStyle = "#000";
 	ctx.globalCompositeOperation = 'darker';
-	
+
 	var drawDot = function(pos, rad){
 		ctx.fillStyle = "#000";
 		ctx.beginPath();
@@ -37,39 +37,39 @@ $(function(){
 	var drawLine = function(s,f){
 		ctx.strokeStyle = "#eee";
 		ctx.beginPath()
-		ctx.moveTo(s[0],s[1]);  
+		ctx.moveTo(s[0],s[1]);
 		ctx.lineTo(f[0],f[1]);
 		ctx.closePath()
 		ctx.stroke()
-		
+
 		};
-	
+
 	var db = BrowserCouch('blank-canvas', {
-		storage: BrowserCouch.LocalStorage.isAvailable ? 
-			new BrowserCouch.LocalStorage(): 
+		storage: BrowserCouch.LocalStorage.isAvailable ?
+			new BrowserCouch.LocalStorage():
 			new BrowserCouch.FakeStorage()});
-		
-		
+
+
 	db.onload(function(){
 		var i = 0;
-		
+
 		db.view({
 			map : function(doc, emit){
 				if (doc){
 					emit(doc._id, doc);
-				}	
+				}
 			},
 			finished : function(view){
 				$.each(view.rows, function(){
 					drawDot(this.value.pos, this.value.rad || 1);
 				});
 				i = view.rows.length;
-				
+
 				var store = function(pos, rad){
 					db.put({_id: 'dot-' + i, pos:pos, rad:rad})
 					i++;
 				};
-				
+
 				$('#wipe').click(function(){
 					ctx.fillStyle = "#fff";
 					ctx.globalCompositeOperation = 'source-over';
@@ -77,7 +77,7 @@ $(function(){
 					ctx.globalCompositeOperation = 'darker';
 					db.wipe();
 				});
-				
+
 				$('#draw').mousemove(function(event){
 					prev = mousepos;
 					mousepos = [event.pageX, event.pageY];
@@ -91,22 +91,22 @@ $(function(){
 							map : function(doc, emit){
 								if (vec.len(vec.sub(doc.pos, mousepos)) <= t){
 									emit (doc._id, doc);
-								}	
+								}
 							},
 							finished : function(view){
 								for (r in view.rows){
 									drawLine(mousepos, view.rows[r].value.pos);
 								}
-							
+
 							}
-							
+
 						});
-						
-					}	
+
+					}
 				}).mousedown(function(){draw=true}).mouseup(function(){draw=false});
 			}
 		});
-	});			
+	});
 });
 		</script>
 
@@ -116,4 +116,4 @@ $(function(){
 		<button id = "wipe" >Wipe</button>
 
 	</body>
-</html> 	
+</html>

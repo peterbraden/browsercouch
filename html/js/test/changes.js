@@ -29,7 +29,7 @@ couchTests.changes = function(debug) {
   var docFoo = {_id:"foo", bar:1};
   T(db.save(docFoo).ok);
   T(db.ensureFullCommit().ok);
-  
+
   req = CouchDB.request("GET", "/test_suite_db/_changes");
   var resp = JSON.parse(req.responseText);
 
@@ -85,7 +85,7 @@ couchTests.changes = function(debug) {
 
     sleep(100);
     var lines = xhr.responseText.split("\n");
-  
+
     var change = JSON.parse(lines[0]);
 
     T(change.seq == 1)
@@ -161,15 +161,15 @@ couchTests.changes = function(debug) {
     T(change.id == "barz");
     T(change.changes[0].rev == docBarz._rev);
     T(lines[3]=='"last_seq":4}');
-	
+
   }
-  
+
   // test the filtered changes
   var ddoc = {
     _id : "_design/changes_filter",
     "filters" : {
       "bop" : "function(doc, req) { return (doc.bop);}",
-      "dynamic" : stringFun(function(doc, req) { 
+      "dynamic" : stringFun(function(doc, req) {
         var field = req.query.field;
         return doc[field];
       }),
@@ -184,19 +184,19 @@ couchTests.changes = function(debug) {
 
   var req = CouchDB.request("GET", "/test_suite_db/_changes?filter=changes_filter/bop");
   var resp = JSON.parse(req.responseText);
-  T(resp.results.length == 0); 
+  T(resp.results.length == 0);
 
   db.save({"bop" : "foom"});
   db.save({"bop" : false});
-  
+
   var req = CouchDB.request("GET", "/test_suite_db/_changes?filter=changes_filter/bop");
   var resp = JSON.parse(req.responseText);
   T(resp.results.length == 1);
-    
+
   req = CouchDB.request("GET", "/test_suite_db/_changes?filter=changes_filter/dynamic&field=woox");
   resp = JSON.parse(req.responseText);
   T(resp.results.length == 0);
-  
+
   req = CouchDB.request("GET", "/test_suite_db/_changes?filter=changes_filter/dynamic&field=bop");
   resp = JSON.parse(req.responseText);
   T(resp.results.length == 1);
@@ -236,31 +236,31 @@ couchTests.changes = function(debug) {
   // error conditions
 
   // non-existing design doc
-  var req = CouchDB.request("GET", 
+  var req = CouchDB.request("GET",
     "/test_suite_db/_changes?filter=nothingtosee/bop");
   TEquals(404, req.status, "should return 404 for non existant design doc");
 
-  // non-existing filter 
-  var req = CouchDB.request("GET", 
+  // non-existing filter
+  var req = CouchDB.request("GET",
     "/test_suite_db/_changes?filter=changes_filter/movealong");
   TEquals(404, req.status, "should return 404 for non existant filter fun");
 
   // both
-  var req = CouchDB.request("GET", 
+  var req = CouchDB.request("GET",
     "/test_suite_db/_changes?filter=nothingtosee/movealong");
-  TEquals(404, req.status, 
+  TEquals(404, req.status,
     "should return 404 for non existant design doc and filter fun");
 
   // changes get all_docs style with deleted docs
   var doc = {a:1};
   db.save(doc);
   db.deleteDoc(doc);
-  var req = CouchDB.request("GET", 
+  var req = CouchDB.request("GET",
     "/test_suite_db/_changes?filter=changes_filter/bop&style=all_docs");
   var resp = JSON.parse(req.responseText);
   var expect = (!is_safari && xhr) ? 3: 1;
   TEquals(expect, resp.results.length, "should return matching rows");
-  
+
   // test for userCtx
   run_on_modified_server(
     [{section: "httpd",
@@ -275,7 +275,7 @@ couchTests.changes = function(debug) {
 
       var req = CouchDB.request("GET", "/_session", authOpts);
       var resp = JSON.parse(req.responseText);
-      
+
       T(db.save({"user" : "Noah Slater"}).ok);
       var req = CouchDB.request("GET", "/test_suite_db/_changes?filter=changes_filter/userCtx", authOpts);
       var resp = JSON.parse(req.responseText);

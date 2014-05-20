@@ -44,18 +44,18 @@
 
 var BrowserCouch = function(opts){
   var bc = {};
-  
+
   // == Utility Functions ==
-  
+
   // === {{{isArray()}}} ===
   //
   // A helper function to determine whether an object is an Array or
   // not. Taken from jQuery
-  
+
   var isArray = function(value) {
     return Object.prototype.toString.call(value) === "[object Array]";
   }
- 
+
   function keys(obj){
       var ret = []
       for (var key in obj)
@@ -89,7 +89,7 @@ var BrowserCouch = function(opts){
       },
       view: function(viewPath, params, callback, context){
           this.get(this.expandViewPath(viewPath, params), callback, context)
-      },  
+      },
       drop: function(callback, context){
           this.request('DELETE', '', null, callback, context)
       },
@@ -135,25 +135,25 @@ var BrowserCouch = function(opts){
   }
 
   window.Couch = Couch
-  
+
   // === {{{ModuleLoader}}} ===
   //
   // A really basic module loader that allows dependencies to be
   // "lazy-loaded" when their functionality is needed.
-  
+
   bc.ModuleLoader = {
     LIBS: {JSON: "js/ext/json2.js",
            UUID: "js/ext/uuid.js"},
-  
+
     require: function ML_require(libs, cb) {
       var self = this,
           i = 0,
           lastLib = "";
-  
+
       if (!isArray(libs)){
         libs = [libs];
       }
-  
+
       function loadNextLib() {
         if (lastLib && !window[lastLib]){
           throw new Error("Failed to load library: " + lastLib);
@@ -177,10 +177,10 @@ var BrowserCouch = function(opts){
           }
         }
       }
-  
+
       loadNextLib();
     },
-  
+
     _loadScript: function ML__loadScript(url, window, cb) {
       var doc = window.document;
       var script = doc.createElement("script");
@@ -196,7 +196,7 @@ var BrowserCouch = function(opts){
       doc.body.appendChild(script);
     }
   };
-  
+
   // == MapReducer Implementations ==
   //
   // //MapReducer// is a generic interface for any map-reduce
@@ -204,7 +204,7 @@ var BrowserCouch = function(opts){
   // to be able to work asynchronously, passing back control to the
   // client at a given interval, so that the client has the ability to
   // pause/cancel or report progress on the calculation if needed.
-  
+
   // === {{{WebWorkerMapReducer}}} ===
   //
   // A MapReducer that uses
@@ -215,39 +215,39 @@ var BrowserCouch = function(opts){
   //
   // The script run by spawned Web Workers is
   // [[#js/worker-map-reducer.js|worker-map-reducer.js]].
-  
+
   bc.WebWorkerMapReducer = function WebWorkerMapReducer(numWorkers, Worker) {
     if (!Worker){
       Worker = window.Worker;
     }
-  
+
     var pool = [];
-  
+
     function MapWorker(id) {
       var worker = new Worker('js/worker-map-reducer.js');
       var onDone;
-  
+
       worker.onmessage = function(event) {
         onDone(event.data);
       };
-  
+
       this.id = id;
       this.map = function MW_map(map, dict, cb) {
         onDone = cb;
         worker.postMessage({map: map.toString(), dict: dict});
       };
     }
-  
+
     for (var i = 0; i < numWorkers; i++){
       pool.push(new MapWorker(i));
     }
-  
+
     this.map = function WWMR_map(map, dict, progress, chunkSize, finished) {
       var keys = dict.getKeys();
       var size = keys.length;
       var workersDone = 0;
       var mapDict = {};
-  
+
       function getNextChunk() {
         if (keys.length) {
           var chunkKeys = keys.slice(0, chunkSize);
@@ -261,7 +261,7 @@ var BrowserCouch = function(opts){
           return null;
         }
       }
-  
+
       function nextJob(mapWorker) {
         var chunk = getNextChunk();
         if (chunk) {
@@ -290,14 +290,14 @@ var BrowserCouch = function(opts){
           workerDone();
         }
       }
-  
+
       function workerDone() {
         workersDone += 1;
         if (workersDone == numWorkers){
           allWorkersDone();
         }
       }
-  
+
       function allWorkersDone() {
         var mapKeys = [];
         for (var name in mapDict){
@@ -306,29 +306,29 @@ var BrowserCouch = function(opts){
         mapKeys.sort();
         finished({dict: mapDict, keys: mapKeys});
       }
-  
+
       for (var i = 0; i < numWorkers; i++){
         nextJob(pool[i]);
       }
     };
-  
+
     // TODO: Actually implement our own reduce() method here instead
     // of delegating to the single-threaded version.
     this.reduce = bc.SingleThreadedMapReducer.reduce;
   };
-  
+
   // === {{{SingleThreadedMapReducer}}} ===
   //
   // A MapReducer that works on the current thread.
-  
+
   bc.SingleThreadedMapReducer = {
     map: function STMR_map(map, storage, docPrefix, progress,
                            chunkSize, finished) {
       storage.keys(docPrefix, function(keys){
-        
+
         var mapDict = {};
         var currDoc;
-    
+
         function emit(key, value) {
           // TODO: This assumes that the key will always be
           // an indexable value. We may have to hash the value,
@@ -340,20 +340,20 @@ var BrowserCouch = function(opts){
           item.keys.push(currDoc._id);
           item.values.push(value);
         }
-    
+
         var i = 0;
-    
+
         function continueMap() {
           var iAtStart = i;
           do {
             storage.get(docPrefix + keys[i], function(d){
-              currDoc=d; 
+              currDoc=d;
               map(d, emit)
               });
             i++;
           } while (i - iAtStart < chunkSize &&
                    i < keys.length);
-    
+
           if (i >= keys.length) {
             var mapKeys = [];
             for (name in mapDict)
@@ -363,48 +363,48 @@ var BrowserCouch = function(opts){
           } else
             progress("map", i / keys.length, continueMap);
         }
-    
+
         continueMap();
-      });  
+      });
     },
-  
+
     reduce: function STMR_reduce(reduce, mapResult, progress,
                                  chunkSize, finished) {
       var rows = [];
       var mapDict = mapResult.dict;
       var mapKeys = mapResult.keys;
-  
+
       var i = 0;
-  
+
       function continueReduce() {
         var iAtStart = i;
-  
+
         do {
           var key = mapKeys[i];
           var item = mapDict[key];
-  
+
           var keys = [];
           for (var j = 0; j < keys.length; j++)
             newKeys.push([key, item.keys[j]]);
-  
+
           rows.push({key: key,
                      value: reduce(keys, item.values)});
           i++;
         } while (i - iAtStart < chunkSize &&
                  i < mapKeys.length)
-  
+
         if (i == mapKeys.length)
           finished(rows);
         else
           progress("reduce", i / mapKeys.length, continueReduce);
       }
-  
+
       continueReduce();
     }
   };
-  
-    
-  
+
+
+
     // == View ==
   bc._View = function BC__View(rows) {
     this.rows = rows;
@@ -426,7 +426,7 @@ var BrowserCouch = function(opts){
       return findRow(key, rows);
     };
   },
-  
+
 
   // == MapView ==
   bc._MapView = function BC__MapView(mapResult) {
@@ -476,34 +476,34 @@ var BrowserCouch = function(opts){
       return findRow(key, keyRows);
     };
   }
-  
 
-  
-  
+
+
+
   // == Storage Implementations ==
   //
   // //Storage// is a generic interface for a persistent storage
   // implementation capable of storing JSON-able objects.
-  
-  
+
+
   // === {{{FakeStorage}}} ===
   //
   // This Storage implementation isn't actually persistent; it's just
   // a placeholder that can be used for testing purposes, or when no
   // persistent storage mechanisms are available.
-  
+
   bc.FakeStorage = function FakeStorage() {
     var db = {};
-  
+
     function deepCopy(obj) {
       if (typeof(obj) == "object") {
         var copy;
-  
+
         if (isArray(obj))
           copy = new Array();
         else
           copy = new Object();
-  
+
         for (name in obj) {
           if (obj.hasOwnProperty(name)) {
             var property = obj[name];
@@ -513,52 +513,52 @@ var BrowserCouch = function(opts){
               copy[name] = property;
           }
         }
-  
+
         return copy;
       } else
         return obj;
     }
-  
+
     this.get = function FS_get(name, cb) {
       if (!(name in db))
         cb(null);
       else
         cb(db[name]);
     };
-  
+
     this.put = function FS_put(name, obj, cb) {
       db[name] = deepCopy(obj);
       cb();
     };
-    
+
     this.remove = function(name, cb){
       delete db[name];
       if(cb){cb();}
     }
-    
+
     this.keys = function(prefix, cb){
       var out = [];
       for (var i in db){
-        if (i.slice(0, prefix.length)===prefix){ 
+        if (i.slice(0, prefix.length)===prefix){
           out.push(i);
-        }  
+        }
       }
       cb(out);
     }
-    
+
   };
-  
+
   // === {{{LocalStorage}}} ===
   //
   // This Storage implementation uses the browser's HTML5 support for
   // {{{localStorage}}} or {{{globalStorage}}} for object persistence.
   //
-  // Each database is stored in a key, as a JSON encoded string. In 
+  // Each database is stored in a key, as a JSON encoded string. In
   // future we may want to rethink this as it's horribly innefficient
-  
+
   bc.LocalStorage = function LocalStorage() {
     var storage;
-    
+
     if (window.localStorage)
       storage = window.localStorage;
     else if (window.globalStorage)
@@ -566,8 +566,8 @@ var BrowserCouch = function(opts){
     else {
         throw new Error("globalStorage/localStorage not available.");
     }
-  
-      
+
+
     this.get = function LS_get(name, cb) {
       if (name in storage && storage[name])//.value)
         bc.ModuleLoader.require('JSON',
@@ -578,7 +578,7 @@ var BrowserCouch = function(opts){
       else
         cb(null);
     };
-  
+
     this.put = function LS_put(name, obj, cb) {
       bc.ModuleLoader.require('JSON',
         function() {
@@ -586,38 +586,38 @@ var BrowserCouch = function(opts){
           if (cb) cb();
         });
     };
-    
+
     this.remove = function(name, cb){
       delete storage[name];
       if(cb){cb();}
-    
+
     }
-    
+
     this.keys = function(prefix, cb){
       var out = [];
       for (var i = 0; i < storage.length; i++){
         var key = storage.key(i);
-        if (key.slice(0, prefix.length)===prefix){ 
+        if (key.slice(0, prefix.length)===prefix){
           out.push(key.slice(prefix.length, key.length));
         }
       }
       cb(out);
     }
-    
+
   }
-  
+
   bc.LocalStorage.isAvailable = (this.location &&
                               this.location.protocol != "file:" &&
                               (this.globalStorage || this.localStorage));
-  
 
-  // == Database Wrapper Interface == 
+
+  // == Database Wrapper Interface ==
   //
   // A basic database interface. Implementing objects
-  // should support methods that emulate the basic REST commands 
-  // that CouchDB uses. 
-  // 
-  
+  // should support methods that emulate the basic REST commands
+  // that CouchDB uses.
+  //
+
   // === Local Storage Database ===
   // TODO, rename this
   bc.BrowserDatabase = function(name, storage, cb, options) {
@@ -628,11 +628,11 @@ var BrowserCouch = function(opts){
         _lastSeq,
         _docCount;
     self.name = name;
-      
+
     var seqs = function(cb){
       storage.keys(seqPrefix, cb);
     }
-    
+
     var removeBySeq = function(seq){
       storage.get(seqPrefix + seq, function(seqInfo){
         var docId = seqInfo.id
@@ -640,7 +640,7 @@ var BrowserCouch = function(opts){
         storage.remove(seqPrefix + seq);
       });
     }
-        
+
     self.wipe = function DB_wipe(cb) {
       seqs(function(sqs){
         for (var seq in sqs){
@@ -659,18 +659,18 @@ var BrowserCouch = function(opts){
           cb(null)
       });
     };
-    
+
     // === {{{PUT}}} ===
     //
-    // This method is vaguely isomorphic to a 
-    // [[http://wiki.apache.org/couchdb/HTTP_Document_API#PUT|HTTP PUT]] to a 
+    // This method is vaguely isomorphic to a
+    // [[http://wiki.apache.org/couchdb/HTTP_Document_API#PUT|HTTP PUT]] to a
     // url with the specified {{{id}}}.
     //
     // It creates or updates a document
     self.put = function DB_put(document, cb, options) {
       options = options || {};
       var newEdits = 'new_edits' in options ? options.new_edits: true;
-      
+
       var self = this;
       var putObj = function(obj){
         storage.get(docPrefix + obj._id, function(orig){
@@ -694,7 +694,7 @@ var BrowserCouch = function(opts){
               function revHash(doc){
                 return doc._rev.split('-')[1]
               }
-              
+
               if (newEdits){
                 obj._rev = (revIndex(obj)+1) + '-' + newHash();
               }else if (orig && obj._rev != orig._rev){
@@ -708,10 +708,10 @@ var BrowserCouch = function(opts){
                   winner = obj
                 else
                   winner = orig
-                  
+
                 var loser = obj === winner ? orig : obj;
                 obj = winner
-                
+
                 if (!obj._conflicts)
                   obj._conflicts = []
                 obj._conflicts.push(loser._rev)
@@ -728,10 +728,10 @@ var BrowserCouch = function(opts){
             storage.put(docPrefix + obj._id, obj, function(){});
             storage.put(seqPrefix + seq, obj._id, function(){})
           }
-        })   
-          
+        })
+
       }
-    
+
       if (isArray(document)) {
         for (var i = 0; i < document.length; i++){
           putObj(document[i]);
@@ -742,11 +742,11 @@ var BrowserCouch = function(opts){
       if (cb)
         cb();
     };
-    
+
 
 
     // === {{{POST}}} ===
-    // 
+    //
     // Roughly isomorphic to the two POST options
     // available in the REST interface. If an ID is present,
     // then the functionality is the same as a PUT operation,
@@ -759,19 +759,19 @@ var BrowserCouch = function(opts){
           data._id = new UUID().createUUID();
           _t.put(data, function(){cb(data._id)}, options);
         });
-      else{  
+      else{
         _t.put(data, function(){cb(data._id)}, options)
       }
     }
 
     // === {{{DELETE}}} ===
     //
-    // Delete the document. 
+    // Delete the document.
     self.del = function(doc, cb){
       this.put({_id : doc._id, _rev : doc._rev, _deleted : true}, cb);
     }
 
-    // 
+    //
     self.docCount = function DB_docCount() {
       if (_docCount !== undefined) return _docCount;
       _docCount = 0;
@@ -795,7 +795,7 @@ var BrowserCouch = function(opts){
       }
       return _docCount;
     };
-    
+
     self.lastSeq = function BC_lastSeq(){
       if (_lastSeq !== undefined) return _lastSeq
       var seq = 1;
@@ -827,10 +827,10 @@ var BrowserCouch = function(opts){
     //
     // * {{{options.chunkSize}}}
     // * {{{options.progress}}} : A callback to indicate progress of a query
-    // * {{{options.mapReducer}}} : A Map-Reduce engine, by default uses a 
+    // * {{{options.mapReducer}}} : A Map-Reduce engine, by default uses a
     //                              single thread
-    // * {{{options.reduce}}} : The reduce function 
-    
+    // * {{{options.reduce}}} : The reduce function
+
     self.view = function DB_view(options) {
       if (!options.map)
         throw new Error('map function not provided');
@@ -880,7 +880,7 @@ var BrowserCouch = function(opts){
             options.finished(new BrowserCouch._MapView(mapResult));
         });
     };
-    
+
     self.getChanges = function(cb, since){
       since = since || 0;
       var changes = [];
@@ -914,13 +914,13 @@ var BrowserCouch = function(opts){
         docIds[change.id] = true
         _changes.push(change);
       }
-        
+
       cb({
         results: _changes,
         last_seq: lastSeq
       });
     }
-    
+
     self.createBulkDocs = function BC_createBulkDocs(changes){
       var docs;
       var ret = {
@@ -962,7 +962,7 @@ var BrowserCouch = function(opts){
       }
       return ret
     }
-    
+
     function getRepInfo(source, target){
       var dbInfo;
       storage.get(dbName, function(di){
@@ -983,7 +983,7 @@ var BrowserCouch = function(opts){
       dbInfo.replications[source + ',' + target] = since;
       storage.put(dbName, dbInfo, function(){})
     }
-    
+
     self.syncToRemote = function BC_syncTo(target, cb){
       var source = 'BrowserCouch:' + dbName
       var since = getRepInfo(source, target);
@@ -1000,7 +1000,7 @@ var BrowserCouch = function(opts){
         }, this)
       }, since);
     }
-    
+
     self.syncFromRemote = function BC_syncFrom(source, cb){
       var self = this;
       var target = 'BrowserCouch:' + dbName;
@@ -1016,7 +1016,7 @@ var BrowserCouch = function(opts){
         if (cb) cb()
       })
     }
-    
+
     self.syncToLocal = function BC_syncToLocal(target, cb){
       var self = this;
       var targetDb;
@@ -1046,8 +1046,8 @@ var BrowserCouch = function(opts){
         if (cb) cb({ok: true})
       }, since);
     }
-    
-    
+
+
     // ==== Sync the database ====
     // Emulates the CouchDB replication functionality
     // At the moment only couch's on the same domain
@@ -1063,12 +1063,12 @@ var BrowserCouch = function(opts){
       else
         throw new Error('Invalid protocol: ' + target);
     }
-    
+
     self.syncFrom = function BC_syncFrom(source, cb){
       var self = this
       var parts = source.split(":");
       var proto = parts[0];
-  
+
       if (proto == 'BrowserCouch'){
         var sourceDb = BrowserCouch(parts[1]);
         sourceDb.syncToLocal(self, cb)
@@ -1077,9 +1077,9 @@ var BrowserCouch = function(opts){
       else
         throw new Error('Invalid protocol: ' + source);
     },
-    
+
     cb(self)
-  
+
   }
 
 
@@ -1087,14 +1087,14 @@ var BrowserCouch = function(opts){
 
   // === //List All Databases// ===
   //
-  // Similar to {{{/_all_dbs}}} as there is no way to see what 
-  // keys are stored in localStorage, we have to store a metadata 
+  // Similar to {{{/_all_dbs}}} as there is no way to see what
+  // keys are stored in localStorage, we have to store a metadata
   // database
   //
   bc.allDbs = function(cb){
     //TODO
-  } 
-  
+  }
+
   // == {{{BrowserCouch}}} Core Constructor ==
   //
   // {{{BrowserCouch}}} is the main object that clients will use.  It's
@@ -1105,21 +1105,21 @@ var BrowserCouch = function(opts){
   //
   var cons = function(name, options){
     var options = options || {};
-    
+
     var self = {
       // 'private' variables - perhaps we should move these into the closure
       loaded : false,
       loadcbs : [],
-      
-      
+
+
       // ==== Add an onload function ====
       // Seeing as we're completely callback driven, and you're
       // frequently going to want to do a bunch of things once
       // the database is loaded, being able to add an arbitrary
       // number of onload functions is useful.
-      // 
-      // Onload functions are called with no arguments, but the 
-      // database object from the constructor is now ready. 
+      //
+      // Onload functions are called with no arguments, but the
+      // database object from the constructor is now ready.
       // (TODO - change this?)
       //
       onload : function(func){
@@ -1127,11 +1127,11 @@ var BrowserCouch = function(opts){
           func(self);
         } else{
           self.loadcbs.push(func);
-        }   
+        }
       }
-      
-    
-    
+
+
+
     };
     // Create a database wrapper.
     bc.BrowserDatabase(name,
@@ -1142,23 +1142,23 @@ var BrowserCouch = function(opts){
         // the self object. Could do this better.
         for (var k in db){
           self[k] = db[k];
-        }  
-        
+        }
+
         // Fire the onload callbacks
         self.loaded = true;
         for (var cbi in self.loadcbs){
             self.loadcbs[cbi](self);
           }
       }, options.storage, options);
-	       
-      return self;   
+
+      return self;
   }
-  
+
   // == TODO ==
-  // We're copying the bc methods onto the Database object. 
+  // We're copying the bc methods onto the Database object.
   // Need to do this better, should research the jquery object.
   for (var k in bc){
     cons[k] = bc[k];
   }
   return cons
-}();  
+}();

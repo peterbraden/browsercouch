@@ -150,7 +150,7 @@ couchTests.show_documents = function(debug) {
           log('xml: '+xml.toSource());
           return xml.toXMLString();
         });
-        
+
         provides("foo", function() {
           return "foofoo";
         });
@@ -198,7 +198,7 @@ couchTests.show_documents = function(debug) {
   T(xhr.status == 404);
   var resp = JSON.parse(xhr.responseText);
   T(resp.error == "not_found");
-  
+
   // show with doc
   xhr = CouchDB.request("GET", "/test_suite_db/_design/template/_show/just-name/"+docid);
   T(xhr.responseText == "Just Rusty");
@@ -364,7 +364,7 @@ couchTests.show_documents = function(debug) {
    }
   });
   var ct = xhr.getResponseHeader("Content-Type");
-  T(/application\/xml/.test(ct));  
+  T(/application\/xml/.test(ct));
 
   // test inclusion of conflict state
   var doc1 = {_id:"foo", a:1};
@@ -410,5 +410,5 @@ couchTests.show_documents = function(debug) {
   db.deleteDoc(doc);
   var xhr = CouchDB.request("GET", "/test_suite_db/_design/template/_show/show-deleted/testdoc");
   TEquals("No doc testdoc", xhr.responseText, "should return 'no doc testdoc'");
-  
+
 };

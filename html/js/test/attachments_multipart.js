@@ -15,9 +15,9 @@ couchTests.attachments_multipart= function(debug) {
   db.deleteDb();
   db.createDb();
   if (debug) debugger;
-  
+
   // mime multipart
-            
+
   xhr = CouchDB.request("PUT", "/test_suite_db/multipart", {
     headers: {"Content-Type": "multipart/related;boundary=\"abc123\""},
     body:
@@ -55,43 +55,43 @@ couchTests.attachments_multipart= function(debug) {
       "this is 19 chars lo" +
       "\r\n--abc123--"
     });
-    
+
   var result = JSON.parse(xhr.responseText);
-  
+
   T(result.ok)
-  
-  
-    
+
+
+
   TEquals(201, xhr.status, "should send 201 Accepted");
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart/foo.txt");
-  
+
   T(xhr.responseText == "this is 21 chars long");
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart/bar.txt");
-  
+
   T(xhr.responseText == "this is 20 chars lon");
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart/baz.txt");
-  
+
   T(xhr.responseText == "this is 19 chars lo");
-  
+
   // now edit an attachment
-  
+
   var doc = db.open("multipart");
   var firstrev = doc._rev;
-  
+
   T(doc._attachments["foo.txt"].stub == true);
   T(doc._attachments["bar.txt"].stub == true);
   T(doc._attachments["baz.txt"].stub == true);
-  
+
   //lets change attachment bar
   delete doc._attachments["bar.txt"].stub; // remove stub member (or could set to false)
   doc._attachments["bar.txt"].length = 18;
   doc._attachments["bar.txt"].follows = true;
   //lets delete attachment baz:
   delete doc._attachments["baz.txt"];
-  
+
   var xhr = CouchDB.request("PUT", "/test_suite_db/multipart", {
     headers: {"Content-Type": "multipart/related;boundary=\"abc123\""},
     body:
@@ -104,26 +104,26 @@ couchTests.attachments_multipart= function(debug) {
       "this is 18 chars l" +
       "\r\n--abc123--"
     });
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart/bar.txt");
-  
+
   T(xhr.responseText == "this is 18 chars l");
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart/baz.txt");
   T(xhr.status == 404);
-  
+
   // now test receiving multipart docs
-  
+
   function getBoundary(xhr) {
     var ctype = xhr.getResponseHeader("Content-Type");
-  
+
     var ctypeArgs = ctype.split("; ").slice(1);
     var boundary = null;
     for(var i=0; i<ctypeArgs.length; i++) {
       if (ctypeArgs[i].indexOf("boundary=") == 0) {
         boundary = ctypeArgs[i].split("=")[1];
         if (boundary.charAt(0) == '"') {
-          // stringified boundary, parse as json 
+          // stringified boundary, parse as json
           // (will maybe not if there are escape quotes)
           boundary = JSON.parse(boundary);
         }
@@ -131,22 +131,22 @@ couchTests.attachments_multipart= function(debug) {
     }
     return boundary;
   }
-  
+
   function parseMultipart(xhr) {
     var boundary = getBoundary(xhr);
     var mimetext = xhr.responseText;
     // strip off leading boundary
     var leading = "--" + boundary + "\r\n";
     var last = "\r\n--" + boundary + "--";
-    
+
     // strip off leading and trailing boundary
     var leadingIdx = mimetext.indexOf(leading) + leading.length;
     var trailingIdx = mimetext.indexOf(last);
     mimetext = mimetext.slice(leadingIdx, trailingIdx);
-    
+
     // now split the sections
     var sections = mimetext.split(new RegExp("\\r\\n--" + boundary));
-    
+
     // spilt out the headers for each section
     for(var i=0; i < sections.length; i++) {
       var section = sections[i];
@@ -156,93 +156,93 @@ couchTests.attachments_multipart= function(debug) {
       var headers = {};
       for(var j=0; j<headersraw.length; j++) {
         var tmp = headersraw[j].split(": ");
-        headers[tmp[0]] = tmp[1]; 
+        headers[tmp[0]] = tmp[1];
       }
       sections[i] = {"headers":headers, "body":body};
     }
-    
+
     return sections;
   }
-  
-  
+
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart?attachments=true",
     {headers:{"accept": "multipart/related,*/*;"}});
-  
+
   T(xhr.status == 200);
-  
+
   // parse out the multipart
-  
+
   var sections = parseMultipart(xhr);
-  
+
   T(sections.length == 3);
-  
+
   // The first section is the json doc. Check it's content-type. It contains
   // the metadata for all the following attachments
-  
+
   T(sections[0].headers['content-type'] == "application/json");
-  
+
   var doc = JSON.parse(sections[0].body);
-  
+
   T(doc._attachments['foo.txt'].follows == true);
   T(doc._attachments['bar.txt'].follows == true);
-  
+
   T(sections[1].body == "this is 21 chars long");
   T(sections[2].body == "this is 18 chars l");
-  
+
   // now get attachments incrementally (only the attachments changes since
   // a certain rev).
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart?atts_since=[\"" + firstrev + "\"]",
     {headers:{"accept": "multipart/related,*/*;"}});
-  
+
   T(xhr.status == 200);
-  
+
   var sections = parseMultipart(xhr);
-  
+
   T(sections.length == 2);
-  
+
   var doc = JSON.parse(sections[0].body);
-  
+
   T(doc._attachments['foo.txt'].stub == true);
   T(doc._attachments['bar.txt'].follows == true);
-  
+
   T(sections[1].body == "this is 18 chars l");
-  
+
   // try it with a rev that doesn't exist (should get all attachments)
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart?atts_since=[\"1-2897589\"]",
     {headers:{"accept": "multipart/related,*/*;"}});
-  
+
   T(xhr.status == 200);
-  
+
   var sections = parseMultipart(xhr);
-  
+
   T(sections.length == 3);
-  
+
   var doc = JSON.parse(sections[0].body);
-  
+
   T(doc._attachments['foo.txt'].follows == true);
   T(doc._attachments['bar.txt'].follows == true);
-  
+
   T(sections[1].body == "this is 21 chars long");
   T(sections[2].body == "this is 18 chars l");
-  
+
   // try it with a rev that doesn't exist, and one that does
-  
+
   xhr = CouchDB.request("GET", "/test_suite_db/multipart?atts_since=[\"1-2897589\",\"" + firstrev + "\"]",
     {headers:{"accept": "multipart/related,*/*;"}});
-  
+
   T(xhr.status == 200);
-  
+
   var sections = parseMultipart(xhr);
-  
+
   T(sections.length == 2);
-  
+
   var doc = JSON.parse(sections[0].body);
-  
+
   T(doc._attachments['foo.txt'].stub == true);
   T(doc._attachments['bar.txt'].follows == true);
-  
+
   T(sections[1].body == "this is 18 chars l");
-  
+
 };

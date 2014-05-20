@@ -60,11 +60,11 @@ function() {
       simple: "function() {return 'ok'};",
       requirey : "function() { var lib = require('whatever/commonjs/upper'); return lib.testing; };"
     }
-  }; 
+  };
 
   var xhr = CouchDB.request("PUT", "/test_suite_db_a/_design/test", {body: JSON.stringify(designDoc)});
   var resp = JSON.parse(xhr.responseText);
-  
+
   TEquals(resp.rev, db.save(designDoc).rev);
 
   // test that editing a show fun on the ddoc results in a change in output

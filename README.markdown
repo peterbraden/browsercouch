@@ -2,14 +2,14 @@ BrowserCouch
 ============
 
 CouchDB in the browser - persistant, syncing client side storage.
- 
- 
- 
+
+
+
 Status
 ------
 
-I'm a few weeks away from what I'd call a 'stable' release. Please feel 
-free to fork or suggest improvements, but I'd hold off on using this 
+I'm a few weeks away from what I'd call a 'stable' release. Please feel
+free to fork or suggest improvements, but I'd hold off on using this
 in a live setting until I can get some issues ironed out.
 
 Thanks,
@@ -17,19 +17,19 @@ Thanks,
 
 Example
 -------
- 
+
 ###GET:
 
     var database = BrowserCouch('foo');
     database.onload(function(){
         database.get('bar', function(d){console.log(d)});
     });
- 
- 
+
+
 ###SYNC
 
     database.sync('http://localhost:5984/foo', {continuous:true});
-    
+
 ###MAP REDUCE
 
 	var test_data = [
@@ -40,16 +40,16 @@ Example
 		{_id : "4", black : 'tea'},
 		{_id : "5", words : 'two foo three'},
 		{_id : "6", words: 'two'}
-	];		
-	
+	];
+
 	var db = BrowserCouch('bar');
-	
+
 	db.onload(function(){
-		db.put(test_data, function(){});	
+		db.put(test_data, function(){});
 	});
-	
-Some time later ...	
-    
+
+Some time later ...
+
 	var db = BrowserCouch('bar');
 	db.onload(function(){
 		db.view({
@@ -58,7 +58,7 @@ Some time later ...
 					var words = doc.words.split(" ");
 	    			for (var i = 0; i < words.length; i++)
 	      				emit(words[i], 1);
-	      		}		
+	      		}
 			},
 			reduce : function(keys, values){
 				var sum = 0;
@@ -68,12 +68,12 @@ Some time later ...
 	    	},
 	    	finished : function(view){
 	    		console.log(view.findRow('two')); // Should emit 2
-	    	}	
+	    	}
 		});
-	});	
+	});
 
 
-    
+
 (See the unit tests for more examples)
 
 

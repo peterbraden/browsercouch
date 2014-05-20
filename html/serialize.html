@@ -7,7 +7,7 @@
         href="css/index.css" />
         <style type='text/css'>
 table, tr, th, td{border: 1px solid #000;}
-        
+
         </style>
   		<title>Serialization</title>
 		<script src="js/ext/jquery.js"></script>
@@ -15,43 +15,43 @@ table, tr, th, td{border: 1px solid #000;}
 		<script type='text/javascript'>
 $(function(){
 	var storage = new BrowserCouch.LocalStorage(), update = function(){};
-	
+
 	var tabulate = function(doc){
 		var t = $("<table />");
 		for (var k in doc){
 			t.append("<tr><th>" + k + "</th><td>" + JSON.stringify(doc[k]) + "</td></tr");
 		}
-		return t;	
+		return t;
 	}
-	
+
 	var db = BrowserCouch("browser-couch", {storage: storage});
 	var syncParams = {
 		update: function(){
 			console.log('updated');
-			update();	
-			}, 
-		continuous:true, 
+			update();
+			},
+		continuous:true,
 		timeout:10000
 	};
-	
+
 	db.sync("http://localhost:5984/bar", syncParams);
 	db.sync("http://localhost:5984/foo", syncParams);
-	
+
 	var revSyncParams = {
 		update: function(){
 			console.log('updated');
-			update();	
-			}, 
-		continuous:false, 
+			update();
+			},
+		continuous:false,
 		timeout:10000,
 		reverse:true
 	};
-	
+
 	db.sync("http://localhost:5984/bar", revSyncParams);
 	db.sync("http://localhost:5984/foo", revSyncParams);
-	
-	
-	
+
+
+
 	db.onload(function(db){
 			console.log('Database got')
 			update = function(){
@@ -61,7 +61,7 @@ $(function(){
 						var rows = x.rows;
 						for (var y in rows){
 							var kv = tabulate(rows[y]);
-							$("#out").append($("<tr> /").append($("<th>" + y + "</th>")).append($("<td />").append(kv)));	
+							$("#out").append($("<tr> /").append($("<th>" + y + "</th>")).append($("<td />").append(kv)));
 						}
 					},
 					map : function(doc, emit){
@@ -79,10 +79,10 @@ $(function(){
 				}
 				return false;
 			});
-			
+
 			update();
 		});
-});				 
+});
 		</script>
 	</head>
 	<body>

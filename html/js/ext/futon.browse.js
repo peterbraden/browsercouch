@@ -152,7 +152,7 @@
                     page.viewName.indexOf("/_view"));
                 db.compactView(groupname, {success: function(resp) { callback() }});
                 break;
-              case "view_cleanup": 
+              case "view_cleanup":
                 db.viewCleanup({success: function(resp) { callback() }});
                 break;
             }
@@ -178,7 +178,7 @@
           }
         });
       }
-      
+
       this.databaseSecurity = function() {
         $.showDialog("dialog/_database_security.html", {
           load : function(d) {
@@ -851,7 +851,7 @@
                   return true;
                 } catch (err) {
                   var msg = err.message;
-                  if (msg == "parseJSON" || msg == "JSON.parse") { 
+                  if (msg == "parseJSON" || msg == "JSON.parse") {
                     msg = "There is a syntax error in the document.";
                   }
                   $("<div class='error'></div>").text(msg).appendTo(this);

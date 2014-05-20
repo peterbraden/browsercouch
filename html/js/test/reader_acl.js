@@ -41,11 +41,11 @@ couchTests.reader_acl = function(debug) {
           names : ["joe","barb"]
         }
       }).ok);
-      
+
       usersDb.ensureFullCommit();
       // security changes will always commit synchronously
       restartServer();
-      
+
       // can't read it as jchris
       T(CouchDB.login("jchris@apache.org", "funnybone").ok);
       T(CouchDB.session().userCtx.name == "jchris@apache.org");
@@ -58,7 +58,7 @@ couchTests.reader_acl = function(debug) {
       }
 
       CouchDB.logout();
-      
+
       // make anyone with the top-secret role an admin
       // db admins are automatically readers
       T(secretDb.setSecObj({
@@ -115,7 +115,7 @@ couchTests.reader_acl = function(debug) {
       T(secretDb.open("baz").foo == "bar");
       // readers can query stored views
       T(secretDb.view("foo/bar").total_rows == 1);
-      
+
       CouchDB.logout();
 
       // can't set non string reader names or roles
@@ -138,7 +138,7 @@ couchTests.reader_acl = function(debug) {
         });
         T(false && "only string names");
       } catch (e) {}
-      
+
       try {
         secretDb.setSecObj({
           "readers" : {

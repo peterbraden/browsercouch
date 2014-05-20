@@ -113,7 +113,7 @@ couchTests.oauth = function(debug) {
       });
       usersDb.deleteDb();
       usersDb.createDb();
-        
+
       // Create a user
       var jasonUserDoc = CouchDB.prepareUserDoc({
         name: "jason",

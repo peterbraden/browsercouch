@@ -19,19 +19,19 @@ couchTests.batch_save = function(debug) {
   var i
   for(i=0; i < 100; i++) {
     T(db.save({_id:i.toString(),a:i,b:i},  {batch : "ok"}).ok);
-    
+
     // test that response is 202 Accepted
     T(db.last_req.status == 202);
   }
-  
+
   for(i=0; i < 100; i++) {
     // attempt to save the same document a bunch of times
     T(db.save({_id:"foo",a:i,b:i},  {batch : "ok"}).ok);
-    
+
     // test that response is 202 Accepted
     T(db.last_req.status == 202);
   }
-  
+
   while(db.allDocs().total_rows != 101){};
 
   // repeat the tests for POST
@@ -39,7 +39,7 @@ couchTests.batch_save = function(debug) {
     var resp = db.request("POST", db.uri + "?batch=ok", {body: JSON.stringify({a:1})});
     T(JSON.parse(resp.responseText).ok);
   }
-  
+
   while(db.allDocs().total_rows != 201){};
 
 };

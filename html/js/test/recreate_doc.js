@@ -41,7 +41,7 @@ couchTests.recreate_doc = function(debug) {
   } catch (e) {
     T(e.error == "conflict");
   }
-  
+
   var binAttDoc = {
     _id: "foo",
     _rev:firstRev,
@@ -68,7 +68,7 @@ couchTests.recreate_doc = function(debug) {
   } catch (e) {
     T(e.error == "conflict");
   }
-  
+
   try {
     // random non-existant prev rev with bin
     binAttDoc._rev = "1-aasasfasdf";

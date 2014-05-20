@@ -76,4 +76,3 @@ describe('BrowserCouch Replicate down', {async: true})
       })
     })
   })
-  

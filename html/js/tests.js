@@ -292,23 +292,23 @@ var Tests = {
   testLocalSync : function(self){
   	var db1 = BrowserCouch('browserSyncTest');
   	var db2 = BrowserCouch('browserSyncTest2');
-  	db1.put([{_id:'0', foo:'bar'}], 
-  	  function(){	  	
+  	db1.put([{_id:'0', foo:'bar'}],
+  	  function(){
     		db2.sync('BrowserCouch:browserSyncTest', {
     			update : function(){
-    				db2.get('0', 
+    				db2.get('0',
     					function(x){
     						self.assertEqual(x['foo'], 'bar');
     					}
-    				);	
+    				);
     			}
-      }); 
+      });
 	   });
   },
   testAllDbs : function(self){
  	BrowserCouch.allDbs(function(dbs){
   		self.assertTrue(dbs.indexOf('BrowserCouch_test_DB')>=0);
-  	});	
+  	});
   }
-  
+
 };
